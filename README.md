@@ -27,9 +27,9 @@ Even better than ipython. Type 'jupyter notebook' from terminal.
 For the prototype, let's use [Bokeh](http://bokeh.pydata.org/en/latest/). We can bypass JavaScript completely. We will revisit and think d3.js for future development.
 
 Some inspiration:
-http://www.thomson.co.uk/blog/wp-content/uploads/infographic/interactive-music-map/index.html
-http://evolutionofweb.appspot.com/?hl=en#/evolution/day
-https://github.com/d3/d3/wiki/Gallery
+* http://www.thomson.co.uk/blog/wp-content/uploads/infographic/interactive-music-map/index.html
+* http://evolutionofweb.appspot.com/?hl=en#/evolution/day
+* https://github.com/d3/d3/wiki/Gallery
 
 ## Prediction/Machine-learning
 For the prototype, we can use [scikit-learn](http://scikit-learn.org/stable/)
