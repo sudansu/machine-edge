@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="{{static_url('./img/icon_32x32.png')}}">
+    <link rel="stylesheet" href="{{static_url('./css/bootstrap.min.css')}}">
+	<link rel="stylesheet" href="{{static_url('./css/font-awesome-4.6.3/css/font-awesome.min.css')}}">
+	<style>
+		.navbar-nav a{
+			line-height: 10px;
+		}
+		.navbar-toggler{
+			line-height: 10px;
+		}
+		.navbar-nav button{
+			margin-left: 5px;
+			margin-right: 5px;
+		}
+		.padded-container{
+			padding-top: 30px;
+			padding-bottom: 30px;
+		}
+	</style>
+	<title>Machine-Edge</title>
+  </head>
+  <body>
+
+	<!-- navigation -->
+    <nav class="navbar navbar-dark bg-inverse">
+		<button class="navbar-toggler hidden-sm-up  pull-xs-right" type="button" data-toggle="collapse" data-target="#collapsedContent">
+			&#9776;
+		</button>
+		<a class="navbar-brand"  href="/">
+			<img src="{{static_url('./img/logo.png')}}"></img>
+		</a>
+		<div class="collapse navbar-toggleable-xs" id="collapsedContent">
+			<div class="nav navbar-nav">
+				<a role="button" href="#" class="btn btn-success pull-xs-right"  style="color:white;">Try Now</button>
+				<a role="button" href="/login" class="btn btn-primary pull-xs-right" style="color:white;">
+					Login
+				</a>
+			</div>
+		</div>
+	</nav>
+
+	<!-- body contents -->
+	<div class="container-fluid">
+		<!-- carousel -->
+		<div class="row">
+			<div id="carousel-slides" class="carousel slide" data-ride="carousel">
+				<ol class="carousel-indicators">
+					<li data-target="#carousel-slides" data-slide-to="0" class="active"></li>
+					<li data-target="#carousel-slides" data-slide-to="1"></li>
+					<li data-target="#carousel-slides" data-slide-to="2"></li>
+					<li data-target="#carousel-slides" data-slide-to="3"></li>
+					<li data-target="#carousel-slides" data-slide-to="4"></li>
+				</ol>
+				<div class="carousel-inner" role="listbox">
+					<div class="carousel-item active">
+						<img src="{{static_url('./img/carousel/caro_code.jpg')}}">
+						<div class="carousel-caption">
+							<h1>We do the coding</h1>
+							<h5>So you can focus on trading</h5>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<img src="{{static_url('./img/carousel/caro_bulb.jpg')}}">
+						<div class="carousel-caption">
+							<h1>We do the analysis</h1>
+							<h5>So you can focus on insights</h5>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<img src="{{static_url('./img/carousel/caro_coffee.jpg')}}">
+						<div class="carousel-caption">
+							<h1>We work hard</h1>
+							<h5>So you can relax</h5>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<img src="{{static_url('./img/carousel/caro_engine.jpg')}}">
+						<div class="carousel-caption">
+							<h1>We train the machines</h1>
+							<h5>So you can enjoy the power</h5>
+						</div>
+					</div>
+					<div class="carousel-item">
+						<img src="{{static_url('./img/carousel/caro_success.jpg')}}">
+						<div class="carousel-caption">
+							<h1>We want to partner you</h1>
+							<h5>To help you achieve success</h5>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> <!-- row -->
+	</div> <!-- container -->
+
+	<div class="container-fluid padded-container">
+		<div class="row">
+			<div class="col-sm-10 offset-sm-1">
+				<h3>MACHINE-EDGE IS BUILT BY HUMAN TRADERS FOR HUMAN TRADERS</h3>
+			</div>
+		</div> <!-- row -->
+		<div class="row">
+			<div class="col-sm-8 offset-sm-2">
+				<p>We understand human traders' frustration brought on by information overload and machine disruptions.
+				We faced the same problems. Machine-Edge was born when we decided to partner with top scientists in machine learning and computing to empower human traders.
+				<p>
+			</div>
+		</div> <!-- row -->
+	</div> <!-- container -->
+
+	<div class="container-fluid padded-container" style="background-color: #f2f2f2">
+		<div class="row">
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/cards/card_visual_md.jpg')}}">
+				<h4>Visualization</h4>
+				<p>Drive insights with innovative visualization techniques.</p>
+				<a href="#"> Learn more...</a>
+			</div>
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/cards/card_interact_md.jpg')}}">
+				<h4>Interaction</h4>
+				<p>Interate with data intuitively.</p>
+				<a href="#"> Learn more...</a>
+			</div>
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/cards/card_predict_md.jpg')}}">
+				<h4>Prediction</h4>
+				<p>Empower prediction with machine learning.</p>
+				<a href="#"> Learn more...</a>
+			</div>
+		</div> <!-- row -->
+	</div> <!-- container -->
+
+	<div class="container-fluid padded-container" style="background-color: #808080; color:white;">
+		<div class="row padded-container">
+			<h3>Firms we have worked in...</h3>
+		</div>
+		<div class="row">
+			<div class="col-sm-4">
+				<img src="{{static_url('./img/firms/firm_abn.png')}}" height="50">
+				<img src="{{static_url('./img/firms/firm_citi.png')}}"  height="50">
+			</div>
+			<div class="col-sm-4">
+				<img src="{{static_url('./img/firms/firm_commerz.png')}}"  height="50">
+				<img src="{{static_url('./img/firms/firm_db.png')}}" height="50">
+			</div>
+			<div class="col-sm-4">
+				<img src="{{static_url('./img/firms/firm_gs.png')}}"  height="50">
+				<img src="{{static_url('./img/firms/firm_jp.png')}}"  height="50">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4 offset-sm-2">
+				<img src="{{static_url('./img/firms/firm_ms.png')}}" height="50">
+				<img src="{{static_url('./img/firms/firm_norodin.png')}}"  height="50">
+			</div>
+			<div class="col-sm-4">
+				<img src="{{static_url('./img/firms/firm_trackrecord.png')}}"  height="50">
+				<img src="{{static_url('./img/firms/firm_tudor.png')}}"  height="50">
+			</div>
+		</div>
+		<div class="row padded-container">
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/profiles/profile_hl.png')}}">
+				<h6>Leng Hoe Lon, CFA</h6>
+			</div>
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/profiles/profile_vee.png')}}">
+				<h6>Phan Vee Leung, CFA</h6>
+			</div>
+			<div class="col-sm-4">
+				<img class="img-fluid", src="{{static_url('./img/profiles/profile_dan.png')}}">
+				<h6>Su Dan</h6>
+			</div>
+		</div> <!-- row -->
+	</div> <!-- container -->
+
+	<div class="container-fluid padded-container" style="background-color: #1a1a1a; color:white;">
+		<div class="row">
+			<div class="col-sm-3">
+			</div>
+			<div class="col-sm-6">
+				<h6>Copyright @ 2016, Machine-Edge Technologies</h6>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3"></div>
+			<div class="col-sm-6">
+				<a href="#" style="color:gray"><i class="fa fa-twitter fa-lg"></i></a>
+				<a href="#" style="color:gray"><i class="fa fa-linkedin fa-lg"></i></a>
+				<a href="#" style="color:gray"><i class="fa fa-facebook fa-lg"></i></a>
+			</div>
+		</div>
+	</div> <!-- container -->
+
+
+	<!-- scripts -->
+    <script src="{{static_url('./js/jquery-3.1.1.min.js')}}"></script>
+	<script src="{{static_url('./js/tether.min.js')}}"></script>
+	<script src="{{static_url('./js/bootstrap.min.js')}}"></script>
+	<script>
+		$(document).ready(function(){
+			$('#login').click(function(){
+				alert('test');
+			});
+		});
+	</script>
+  </body>
+</html>

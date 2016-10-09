@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="{{static_url('./img/icon_32x32.png')}}">
+    <link rel="stylesheet" href="{{static_url('./css/bootstrap.min.css')}}">
+	<link rel="stylesheet" href="{{static_url('./css/font-awesome-4.6.3/css/font-awesome.min.css')}}">
+	<style>
+		html {
+			background: url({{static_url('./img/login_bg.jpg')}}) no-repeat center center fixed;
+			-webkit-background-size: cover;
+			-moz-background-size: cover;
+			-o-background-size: cover;
+			background-size: cover;
+		}
+		body {
+			background-color: transparent;
+			color: white;
+		}
+		.form-login {
+		  max-width: 330px;
+		  padding-top: 150px;
+		  margin: 0 auto;
+		}
+	</style>
+	<title>Machine-Edge</title>
+  </head>
+  <body>
+
+	<!-- navigation -->
+    <nav class="navbar navbar-dark bg-inverse">
+		<a class="navbar-brand" href="/">
+			<img src="{{static_url('./img/logo.png')}}"></img>
+		</a>
+	</nav>
+
+	<div class="container">
+		<form class="form-login">
+			<div class="form-group">
+				<input type="text" class="form-control" name="email" placeholder="Email"
+				style="background-color:transparent;color:white;">
+				<input type="password" class="form-control" name="password" placeholder="Password"
+				style="background-color:transparent;color:white;">
+				<button type="submit" id="login" class="btn btn-outline-info pull-xs-right">Login</button>
+			</div>
+		</form>
+	</div>
+
+	<!-- scripts -->
+    <script src="{{static_url('./js/jquery-3.1.1.min.js')}}"></script>
+	<script src="{{static_url('./js/tether.min.js')}}"></script>
+	<script src="{{static_url('./js/bootstrap.min.js')}}"></script>
+  </body>
+</html>
