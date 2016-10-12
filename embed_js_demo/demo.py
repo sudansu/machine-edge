@@ -7,13 +7,16 @@ import os.path
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 class ChartModule(tornado.web.UIModule):
-    def render(self,title):
-        print "Title: " + title
-        return self.render_string('modules/chart.html',header=title) 
+    def render(self):
+        divChart = '<div class="bk-root"><div class="plotdiv" id="bdb58f8c-be29-46ac-a764-d3dd720e8f7e"></div></div>'
+        with open('bk.js', 'r') as content_file:
+            script = content_file.read()
+        return self.render_string('modules/chart.html',script=script, div=divChart) 
 
-    def embedded_javascript(self):
-        script = "alert('Executing js here')"
-        return script
+    # def embedded_javascript(self):
+    #     with open('bk.js', 'r') as content_file:
+    #         script = content_file.read()
+    #     return script
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
