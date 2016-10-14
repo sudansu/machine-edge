@@ -4,14 +4,15 @@ import tornado.web
 import tornado.options
 import os.path
 
+from visual.test import test_plot
+from visual.redis import redis_plot
+
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 class ChartModule(tornado.web.UIModule):
     def render(self):
-        divChart = '<div class="bk-root"><div class="plotdiv" id="bdb58f8c-be29-46ac-a764-d3dd720e8f7e"></div></div>'
-        with open('bk.js', 'r') as content_file:
-            script = content_file.read()
-        return self.render_string('modules/chart.html',script=script, div=divChart) 
+        js, div = redis_plot()
+        return self.render_string('modules/chart.html',script=js, div=div)
 
     # def embedded_javascript(self):
     #     with open('bk.js', 'r') as content_file:
@@ -41,18 +42,18 @@ class LoginHandler(BaseHandler):
             message = self.set_secure_cookie("message","Login Failed...")
             self.redirect("/login")
 
-class WelcomeHandler(BaseHandler): 
-    @tornado.web.authenticated 
+class WelcomeHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         self.render('index.html',page=None, user=self.current_user)
 
-class VisualHandler(BaseHandler): 
-    @tornado.web.authenticated 
+class VisualHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         self.render('visualization.html',page="visualization", title="Chart Title", user=self.current_user)
 
-class PredictionHandler(BaseHandler): 
-    @tornado.web.authenticated 
+class PredictionHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         self.render('prediction.html',page="prediction", user=self.current_user)
 
