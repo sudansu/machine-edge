@@ -43,7 +43,7 @@ def CreateKnnFigure():
     # add 5 knn figures
     _knn_fig = list()
     _knn_source = list()
-    for i in range(0, kNUM_KNN):
+    for i in range(0, kNUM_SHOW):
         # fig = figure(width=200, height=200, x_axis_type="datetime", webgl=True)
         _fig = figure(width=200, height=200, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
         _line_source = ColumnDataSource(data=dict(index=[], close=[]))
@@ -70,7 +70,7 @@ def ChangeSource(new):
     # print (type(main_source.data["index"]))
     knn_pred.SetSource(main_source.data['close'])
     # Clear the source for knn figures
-    for i in range(0, kNUM_KNN):
+    for i in range(0, kNUM_SHOW):
         _src = knn_source[i]
         _d1 = _src[0].data
         _d2 = _src[1].data
@@ -269,7 +269,7 @@ def Predict():
     _w = knn_pred.GetTopKnn(_inds_min, _inds_max, kNUM_KNN)
     print(_w)
     # update knn fig
-    for i in range(0, len(_w)):
+    for i in range(0, kNUM_SHOW):
         _src = knn_source[i]
         UpdateKnnSource(_src[0], _src[1], _w[i][1], _w[i][1] + _inds_max - _inds_min)
         knn_fig[i].title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
@@ -298,7 +298,8 @@ def CreatePredictFigure():
     return _fig, _source
 
 # global configuration
-kNUM_KNN = 5
+kNUM_KNN = 10
+kNUM_SHOW = 5
 # get data sources
 sources = DataSource()
 # add widgets
