@@ -14,7 +14,7 @@ class KnnPrediction:
 #        print(top_k)
         return top_k
 
-    def GP_Predict(self, start,end,top_k):
+    def GP_Predict(self, start,end,top_k,look_ahead):
         print ("Start GP_Predict: ")
         k = len(top_k)
         l = end-start
@@ -29,7 +29,6 @@ class KnnPrediction:
 
             X.append(x)
 
-            look_ahead = 3
             y = []
             for j in range(look_ahead):
                 y.append(self._rate[offset + j])
@@ -57,7 +56,7 @@ class KnnPrediction:
         print(y_preds)
         print("std: ")
         print(stds)
-        return y_preds, stds
+        return y_preds[0], stds[0]
 
     def Predict(self, start, end, top_k):
         k = len(top_k)

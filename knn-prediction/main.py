@@ -252,8 +252,54 @@ def UpdatePredictSource(src, inds_min, inds_max, avg_v, min_v, max_v):
     _d6['index'] = _max_index
     _d6['close'] = _max_close
 
-def Predict():
-    # find selected start/end points
+def Update_GP_Predict_Source(src, inds_min, inds_max,mean_rates,stv_rate):
+    print("mean_rates: ")
+    print(mean_rates)
+    print("stv_rate: ")
+    print(stv_rate)
+
+    _d1 = main_source.data
+
+    _old_index = list(_d1['index'][inds_min:inds_max])
+    _old_close = list(_d1['close'][inds_min:inds_max])    
+
+    _step = _d1['index'][inds_min+1] - _d1['index'][inds_min]
+
+    _d2 = src[0].data #line source
+    _d3 = src[1].data #current source (Circle)
+    _d4 = src[2].data #future source (Patch)
+
+    _d2['index'] = _old_index
+    _d2['close'] = _old_close   
+    _d3['index'] = _old_index
+    _d3['close'] = _old_close   
+
+    future_index = []
+    future_close = []
+    future_index.append(_old_index[-1])
+    future_close.append(_old_close[-1])
+
+    pre_close = _old_close[-1]
+    for i in range(1,look_ahead+1):
+        _s = _old_index[-1] + _step * i
+        future_index.append(_s)
+        future_close.append(pre_close * (mean_rates[i - 1] + stv_rate))
+
+    for i in range(look_ahead,0,-1):
+        _s = _old_index[-1] + _step * i
+        future_index.append(_s)
+        future_close.append(pre_close * (mean_rates[i - 1] - stv_rate))
+    
+    print("Future Index: ")
+    print(future_index)
+    print("Future Close: ")
+    print(future_close)
+    print()
+    _d4['index'] = future_index
+    _d4['close'] = future_close
+
+
+def Predict(): # find selected start/end points
     _inds = sorted(main_source.selected['1d']['indices'])
     # skip if none
     if (len(_inds) == 0):
@@ -274,8 +320,27 @@ def Predict():
         UpdateKnnSource(_src[0], _src[1], _w[i][1], _w[i][1] + _inds_max - _inds_min)
         knn_fig[i].title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
     # update pred fig
-    _avg, _min, _max = knn_pred.Predict(_inds_min, _inds_max, _w)
-    UpdatePredictSource(predict_source, _inds_min, _inds_max, _avg, _min, _max)
+    # _avg, _min, _max = knn_pred.Predict(_inds_min, _inds_max, _w)
+    mean_rates,stv_rate = knn_pred.GP_Predict(_inds_min, _inds_max, _w,look_ahead)
+    Update_GP_Predict_Source(predict_source, _inds_min, _inds_max,mean_rates,stv_rate)
+    # UpdatePredictSource(predict_source, _inds_min, _inds_max, _avg, _min, _max)
+
+def Create_GP_Predict_Figure():
+
+    _fig = figure(width=300, height=300, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
+    _line_source = ColumnDataSource(data=dict(index=[], close=[]))
+    _fig.line('index', 'close', source=_line_source, color='navy')
+    _current_source = ColumnDataSource(data=dict(index=[], close=[]))
+    _fig.circle('index', 'close', source=_current_source, color='firebrick', size=3)
+    _future_source = ColumnDataSource(data=dict(index=[], close=[]))
+    _fig.patch('index', 'close', source=_future_source, alpha=0.5, color="#99d8c9")
+    _fig.title.text = "GP Predicted Trend"
+    _fig.title.align = "center"
+    _fig.grid.grid_line_alpha=0
+    _fig.ygrid.band_fill_color="olive"
+    _fig.ygrid.band_fill_alpha=0.1
+    _source = [_line_source, _current_source, _future_source ]
+    return _fig, _source
 
 def CreatePredictFigure():
     _fig = figure(width=300, height=300, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
@@ -298,6 +363,7 @@ def CreatePredictFigure():
     return _fig, _source
 
 # global configuration
+look_ahead = 3
 kNUM_KNN = 10
 kNUM_SHOW = 5
 # get data sources
@@ -325,8 +391,9 @@ dropdown.on_click(ChangeSource)
 button = Button(label="Predict!", button_type="warning")
 button.on_click(Predict)
 # draw predict figure
-predict_fig, predict_source = CreatePredictFigure()
+# predict_fig, predict_source = CreatePredictFigure()
 
+predict_fig, predict_source = Create_GP_Predict_Figure()
 # show figures
 pred_plot = column(widgetbox(dropdown, button), predict_fig)
 main_plot = row(main_fig, pred_plot)
