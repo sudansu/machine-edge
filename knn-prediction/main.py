@@ -13,6 +13,9 @@ def CreateDropdown():
 
 def CreateMainSource():
     _df = sources.GetDataFrame(dropdown.default_value)
+    # print ("Creating Main Source: ")
+    # print ("Type _dt.index")
+    # print (type(_df.index))
     return ColumnDataSource(data=dict(index=_df.index, close=_df.close))
 
 def CreateMainFigure():
@@ -62,7 +65,38 @@ def ChangeSource(new):
     _df = sources.GetDataFrame(new)
     _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close))
     main_source.data = _new_source.data
+    # print ("Change Source: ")
+    # print ("Type of main source data index")
+    # print (type(main_source.data["index"]))
     knn_pred.SetSource(main_source.data['close'])
+    # Clear the source for knn figures
+    for i in range(0, kNUM_KNN):
+        _src = knn_source[i]
+        _d1 = _src[0].data
+        _d2 = _src[1].data
+        knn_fig[i].title.text = "Top " + str(i+1) + " NN"
+        _d1['index'] = []
+        _d1['close'] = []
+        _d2['index'] = []
+        _d2['close'] = []
+    
+    #clear the source for prediction figure
+    src = predict_source
+    _d2 = src[0].data #line source
+    _d3 = src[1].data #current source
+    _d4 = src[2].data #future source
+    _d5 = src[3].data #min source
+    _d6 = src[4].data #max sourcs
+    _d2['index'] = []
+    _d2['close'] = []
+    _d3['index'] = []
+    _d3['close'] = []
+    _d4['index'] = []
+    _d4['close'] = []
+    _d5['index'] = []
+    _d5['close'] = []
+    _d6['index'] = []
+    _d6['close'] = []
 
 def UpdateKnnSource(line_src, circle_src, inds_min, inds_max):
     _d1 = main_source.data
@@ -77,22 +111,89 @@ def UpdateKnnSource(line_src, circle_src, inds_min, inds_max):
     _d3['close'] = _d1['close'][inds_min:inds_max]
 
 def UpdatePredictSource(src, inds_min, inds_max, avg_v, min_v, max_v):
+    # print ("Start Updating Predict Source")
     _d1 = main_source.data
-    _all_index = _d1['index'][inds_min:inds_max]
-    _all_close = _d1['close'][inds_min:inds_max]
-    _old_index = _d1['index'][inds_min:inds_max]
-    _old_close = _d1['close'][inds_min:inds_max]
-    _new_index = _d1['index'][inds_min:inds_min]
-    _new_close = _d1['close'][inds_min:inds_min]
-    _min_index = _d1['index'][inds_min:inds_min]
-    _min_close = _d1['close'][inds_min:inds_min]
-    _max_index = _d1['index'][inds_min:inds_min]
-    _max_close = _d1['close'][inds_min:inds_min]
+    # print()
+    # print("type(_d1['index'])")
+    # print(type(_d1['index']))
+    # print()
+    # print("type(_d1['index'][inds_min:inds_max]))")
+    # print(type(_d1['index'][inds_min:inds_max]))
+
+    _all_index = list(_d1['index'][inds_min:inds_max])
+    _all_close = list(_d1['close'][inds_min:inds_max])
+    _old_index = list(_d1['index'][inds_min:inds_max])
+    _old_close = list(_d1['close'][inds_min:inds_max])
+    # _new_index = _d1['index'][inds_min:inds_min]
+    # _new_close = _d1['close'][inds_min:inds_min]
+    # _min_index = _d1['index'][inds_min:inds_min]
+    # _min_close = _d1['close'][inds_min:inds_min]
+    # _max_index = _d1['index'][inds_min:inds_min]
+    # _max_close = _d1['close'][inds_min:inds_min]
+    _new_index = []
+    _new_close = []
+    _min_index = []
+    _min_close = []
+    _max_index = []
+    _max_close = []
     _step = _d1['index'][inds_min+1] - _d1['index'][inds_min]
+
+    # print ("Before updating source")
+    # print("all_index- Len:  " + str(len(_all_index)))
+    # print (_all_index)
+    # print()
+    # print("all_close- Len:  " + str(len(_all_close)))
+    # print (_all_close)
+    # print()
+    # print("old_index- Len:  " + str(len(_old_index)))
+    # print(_old_index)
+    # print()
+    # print("old_close- Len:  " + str(len(_old_close)))
+    # print (_old_close)
+    # print()
+    # print("new_index- Len:  " + str(len(_new_index)))
+    # print(_new_index)
+    # print()
+    # print("new_close- Len:  " + str(len(_new_close)))
+    # print (_new_close)
+    # print()
+    # print("min_index- Len:  " + str(len(_min_index)))
+    # print(_min_index)
+    # print()
+    # print("min_close- Len:  " + str(len(_min_index)))
+    # print (_min_close)
+    # print()
+    # print("max_index- Len:  " + str(len(_max_index)))
+    # print(_max_index)
+    # print()
+    # print("max_close- Len:  " + str(len(_max_close)))
+    # print (_max_close)
+    # print()
+
+    # print("_step = ")
+    # print(_step)
+    # print(type(_step))
+    # print()
+    # print("Avg_v: ")
+    # print(avg_v)
+    # print()
+    # print("min_v: ")
+    # print(min_v)
+    # print()
+    # print("Max_v: ")
+    # print(max_v)
+    # print()
+
+
     for i in range(0, len(avg_v)):
         _rate = avg_v[i]
+        # print("_rate = " + str(_rate))
         _s = _all_index[-1] + _step
+        # print("_s = ")
+        # print(_s)
+        # print(type(_s))
         _v = _all_close[-1] * _rate
+        # print("_v = " + str(_v))
         _all_index.append(_s)
         _new_index.append(_s)
         _min_index.append(_s)
@@ -101,11 +202,45 @@ def UpdatePredictSource(src, inds_min, inds_max, avg_v, min_v, max_v):
         _new_close.append(_v)
         _min_close.append(_v / _rate * min_v[i])
         _max_close.append(_v / _rate * max_v[i])
-    _d2 = src[0].data
-    _d3 = src[1].data
-    _d4 = src[2].data
-    _d5 = src[3].data
-    _d6 = src[4].data
+
+    print("Finish Loop")
+    _d2 = src[0].data #line source
+    _d3 = src[1].data #current source (Circle)
+    _d4 = src[2].data #future source (Circle)
+    _d5 = src[3].data #min source (Circle)
+    _d6 = src[4].data #max sourcs (Circle)
+
+    # print("After updating source: ")
+    # print("all_index- Len:  " + str(len(_all_index)))
+    # print (_all_index)
+    # print()
+    # print("all_close- Len:  " + str(len(_all_close)))
+    # print (_all_close)
+    # print()
+    # print("old_index- Len:  " + str(len(_old_index)))
+    # print(_old_index)
+    # print()
+    # print("old_close- Len:  " + str(len(_old_close)))
+    # print (_old_close)
+    # print()
+    # print("new_index- Len:  " + str(len(_new_index)))
+    # print(_new_index)
+    # print()
+    # print("new_close- Len:  " + str(len(_new_close)))
+    # print (_new_close)
+    # print()
+    # print("min_index- Len:  " + str(len(_min_index)))
+    # print(_min_index)
+    # print()
+    # print("min_close- Len:  " + str(len(_min_index)))
+    # print (_min_close)
+    # print()
+    # print("max_index- Len:  " + str(len(_max_index)))
+    # print(_max_index)
+    # print()
+    # print("max_close- Len:  " + str(len(_max_close)))
+    # print (_max_close)
+    # print()
     _d2['index'] = _all_index
     _d2['close'] = _all_close
     _d3['index'] = _old_index
@@ -125,6 +260,12 @@ def Predict():
         return
     _inds_min = _inds[0]
     _inds_max = _inds[-1] + 1
+
+    # print ("_inds_min")
+    # print (_inds_min)
+
+    # print("_inds_max")
+    # print(_inds_max)
     _w = knn_pred.GetTopKnn(_inds_min, _inds_max, kNUM_KNN)
     print(_w)
     # update knn fig
@@ -165,6 +306,10 @@ dropdown = CreateDropdown()
 # get main source
 main_source = CreateMainSource()
 # create knn prediction
+# print ("Main Source: ")
+# print ("Type of main source data index")
+# print (type(main_source.data["index"]))
+
 knn_pred = KnnPrediction()
 knn_pred.SetSource(main_source.data['close'])
 # draw main figure
