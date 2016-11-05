@@ -40,7 +40,7 @@ class LoginHandler(BaseHandler):
         user =  self.get_secure_cookie("username")
         if user != None:
         	print (user)
-        	#self.redirect("/main")
+        	self.redirect("/main")
         else:
 	        message = self.get_secure_cookie("message")
 	        if message == None:
@@ -51,7 +51,7 @@ class LoginHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username")
         pwd = self.get_argument("password")
-        if username == "admin" and  pwd == "admin":
+        if username == "jarvis" and  pwd == "ironman":
             self.set_secure_cookie("username", username)
             self.redirect("/main")
         else:#Login Failed
