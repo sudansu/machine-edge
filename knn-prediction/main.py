@@ -364,7 +364,7 @@ def CreatePredictFigure():
 
 # global configuration
 look_ahead = 3
-kNUM_KNN = 10
+kNUM_KNN = 5
 kNUM_SHOW = 5
 # get data sources
 sources = DataSource()
