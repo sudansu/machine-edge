@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <h1> Visualization Page goes here</h1>
+    <iframe src="{{page_link}}" name="targetframe" allowTransparency="true" scrolling="no" frameborder="0" onload="this.width=screen.width;this.height=screen.height;">
+    </iframe>
 {% end %}

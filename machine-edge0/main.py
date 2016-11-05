@@ -22,7 +22,7 @@ class MainHandler(BaseHandler):
 class VisualHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('visualization.html',page="visualization", title="Chart Title", user=self.current_user)
+        self.render('visualization.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/daily_what_happened_since")
 
 class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
