@@ -36,10 +36,15 @@
 		</a>
 	</nav>
 
+	<div class="pen-title">
+	  <h1>{{message}}</h1>
+	</div>
+	
 	<div class="container">
-		<form class="form-login">
+		<form action="/login" method="post" class="form-login">
+		    {% raw xsrf_form_html() %}
 			<div class="form-group">
-				<input type="text" class="form-control" name="email" placeholder="Email"
+				<input type="text" class="form-control" name="username" placeholder="username"
 				style="background-color:transparent;color:white;">
 				<input type="password" class="form-control" name="password" placeholder="Password"
 				style="background-color:transparent;color:white;">

@@ -1,0 +1,61 @@
+<!DOCTYPE html>=
+<html lang="en"> 
+    <head> <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <meta charset="utf-8"> 
+        <title>Machine Edge</title>
+        <meta name="generator" content="Bootply" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link href="{{static_url("css/bootstrap.min.css")}}" rel="stylesheet">
+
+        <!--[if lt IE 9]>
+            <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link href="{{static_url("css/base.css")}}" rel="stylesheet">
+    </head>
+    <body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Machine Edge</a>
+    </div>
+    <div class="collapse navbar-collapse pull-left">
+      <ul class="nav navbar-nav">
+        <li {% if page == "visualization" %} class="active" {% end %}><a href="/visual">Visualization</a></li>
+        <li {% if page == "prediction" %} class="active" {% end %}><a href="/predict">Prediction</a></li>
+      </ul>
+      <!-- <a style="color:white" class="navbar-brand pull-right" href="#">{{user}}</a> -->
+    </div><!--/.nav-collapse -->
+   <div  class="dropdown pull-right">
+      <button  class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+         <span class="glyphicon glyphicon-user"></span> 
+         {{user}} 
+          <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Profile</a></li>
+          <li role="presentation" class="divider"></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="/logout">Log out</a></li>
+      </ul>
+    </div>
+ </div>
+
+</div>
+
+<div class="container">
+  
+  <div class="text-center">
+    {% block body %}
+    {% end %}
+  </div>
+  
+</div><!-- /.container -->
+    <!-- script references -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+        <script src="{{static_url("js/bootstrap.min.js")}}"></script>
+    </body>
+</html>
