@@ -4,6 +4,7 @@ from bokeh.models import Circle, ColumnDataSource, BoxSelectTool
 from bokeh.models.widgets import Dropdown, Button
 
 from datasource import DataSource
+from regime import RegimeIdentifier
 # from prediction import KnnPrediction
 
 def CreateDropdown():
@@ -16,18 +17,16 @@ def CreateMainSource():
     # print ("Creating Main Source: ")
     # print ("Type _dt.index")
     # print (type(_df.index))
-    return ColumnDataSource(data=dict(index=_df.index, close=_df.close))
+
+    colors = ["navy"] * len(_df.index)
+    return ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors))
 
 def CreateMainFigure():
     _tools = "pan,box_zoom,wheel_zoom,reset"
     _fig = figure(width=800, height=350, x_axis_type="datetime", tools=_tools, webgl=True)
-    _fig.line('index', 'close', source=main_source, color='navy', line_alpha=0.5, legend='daily-close')
-    _renderer = _fig.circle('index', 'close', source=main_source, color='navy', size=2, legend='daily-close')
-    # set select/unselect color
-    _selected_circle = Circle(fill_alpha=1, fill_color="firebrick", size=3, line_alpha=1,  line_color="firebrick")
-    _nonselected_circle = Circle(fill_alpha=0, fill_color="navy", size=2, line_alpha=0, line_color="navy")
-    _renderer.selection_glyph = _selected_circle
-    _renderer.nonselection_glyph = _nonselected_circle
+    _fig.line('index', 'close', source=main_source, color='blue', line_alpha=1, legend='daily-close')
+    _renderer = _fig.circle('index', 'close', source=main_source, color='color', size=2, legend='daily-close')
+
     # customize figure by setting attributes
     _fig.title.text = dropdown.default_value + " (daily)"
     _fig.title.align = "center"
@@ -45,25 +44,40 @@ def ChangeSource(new):
     main_fig.title.text = new + " (daily)"
     dropdown.label = new
     _df = sources.GetDataFrame(new)
-    _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close))
+    colors = ["navy"] * len(_df.index)
+    _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors))
     main_source.data = _new_source.data
-   
+    ri.SetSource(main_source.data['close'])
+
 
 def analyze():
-    print("Analyzing here")
+
+    length = len(main_source.data['index'])
+    colors = ["navy"] * length
+    is_turbulant = ri.predict()
+    for i, is_turb in enumerate(is_turbulant):
+        if is_turb:
+            colors[i] = "red"
+    main_source.data['color'] = colors
+    # print(is_turbulant)
+    # print("Turbulance Length: ", len(is_turbulant))
+    # print("Source Length: ", length)
 
 
 # get data sources
 sources = DataSource()
+
 # add widgets
 dropdown = CreateDropdown()
 # get main source
 main_source = CreateMainSource()
 
+#Create Regime Identifier
+ri = RegimeIdentifier()
+ri.SetSource(main_source.data['close'])
+
 # draw main figure
 main_fig = CreateMainFigure()
-# add box select tool
-main_fig.add_tools(BoxSelectTool(dimensions=["width"]))
 # add dropdown on click actions
 dropdown.on_click(ChangeSource)
 # add button for prediction
