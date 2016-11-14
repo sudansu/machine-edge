@@ -1,8 +1,10 @@
 from bokeh.plotting import figure, curdoc
+from bokeh.models import HoverTool
+
 from bokeh.layouts import gridplot, row, column, widgetbox
 from bokeh.models import Circle, ColumnDataSource, BoxSelectTool
 from bokeh.models.widgets import Dropdown, Button
-
+import re
 from datasource import DataSource
 from regime import RegimeIdentifier
 # from prediction import KnnPrediction
@@ -12,20 +14,32 @@ def CreateDropdown():
     _menu = list(zip(_options, _options))
     return Dropdown(label=_options[0], button_type="success", menu=_menu, default_value=_options[0])
 
+def CreateRangeDropDown():
+    ranges = [30,60,90]
+    labels = ["Recent %d Days" % r for r in ranges ]
+
+    _menu = list(zip(labels, labels))
+    _menu.append(("reset","reset"))
+    return Dropdown(label="Range", button_type="success", menu=_menu, default_value=labels[0])
+
+
+
 def CreateMainSource():
     _df = sources.GetDataFrame(dropdown.default_value)
     # print ("Creating Main Source: ")
     # print ("Type _dt.index")
     # print (type(_df.index))
-
     colors = ["navy"] * len(_df.index)
-    return ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors))
+    probs = ["N.A."] * len(_df.index)
+    sizes = [2] * len(_df.index)
+
+    return ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors,size = sizes,prob = probs))
 
 def CreateMainFigure():
-    _tools = "pan,box_zoom,wheel_zoom,reset"
+    _tools = "pan,box_zoom,wheel_zoom,hover, reset"
     _fig = figure(width=800, height=350, x_axis_type="datetime", tools=_tools, webgl=True)
     _fig.line('index', 'close', source=main_source, color='blue', line_alpha=1, legend='daily-close')
-    _renderer = _fig.circle('index', 'close', source=main_source, color='color', size=2, legend='daily-close')
+    _renderer = _fig.circle('index', 'close', source=main_source, color='color', size='size', legend='daily-close')
 
     # customize figure by setting attributes
     _fig.title.text = dropdown.default_value + " (daily)"
@@ -36,7 +50,48 @@ def CreateMainFigure():
     _fig.yaxis.axis_label = 'Price'
     _fig.ygrid.band_fill_color="olive"
     _fig.ygrid.band_fill_alpha=0.1
+
+    hover = _fig.select_one(HoverTool)
+    hover.point_policy = "follow_mouse"
+    hover.tooltips = [
+        ("Price", "@close"),
+        ("Turbulance Prob", "@prob"),
+    ]
     return _fig
+
+def ChangeRange(new):
+    range_dropdown.label = new
+    option = dropdown.default_value
+
+    if new == "reset":
+        ChangeSource(option)
+        return
+
+    _df = sources.GetDataFrame(option)
+    pre_days = int(re.findall(r'\d+', new)[0])
+    # print(pre_days)
+
+
+    #Perform Regime Analysis
+    ri.SetSource(list(_df.close[-pre_days:]))
+    turb_probs = ri.predict_prob()
+    #print(turb_prob)
+
+    turb_threshold = 0.75
+
+    colors = []
+    sizes = []
+    for prob in turb_probs:
+        if prob > turb_threshold:
+            colors.append("red")
+            sizes.append(5)
+        else:
+            colors.append("navy")
+            sizes.append(2)
+
+    _new_source = ColumnDataSource(data=dict(index=_df.index[-pre_days:], close=_df.close[-pre_days:],color=colors,size = sizes,prob=turb_probs))
+    main_source.data = _new_source.data
+
 
 
 
@@ -45,7 +100,10 @@ def ChangeSource(new):
     dropdown.label = new
     _df = sources.GetDataFrame(new)
     colors = ["navy"] * len(_df.index)
-    _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors))
+
+    probs = ["N.A."] * len(_df.index)
+    sizes = [2] * len(_df.index)
+    _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close,color=colors,size=sizes,prob = probs))
     main_source.data = _new_source.data
     ri.SetSource(main_source.data['close'])
 
@@ -71,7 +129,6 @@ sources = DataSource()
 dropdown = CreateDropdown()
 # get main source
 main_source = CreateMainSource()
-
 #Create Regime Identifier
 ri = RegimeIdentifier()
 ri.SetSource(main_source.data['close'])
@@ -80,9 +137,12 @@ ri.SetSource(main_source.data['close'])
 main_fig = CreateMainFigure()
 # add dropdown on click actions
 dropdown.on_click(ChangeSource)
-# add button for prediction
-button = Button(label="Analyze!", button_type="warning")
-button.on_click(analyze)
+range_dropdown = CreateRangeDropDown()
 
-main_plot = row(main_fig, widgetbox(dropdown, button))
+range_dropdown.on_click(ChangeRange)
+# add button for prediction
+# button = Button(label="Analyze!", button_type="warning")
+# button.on_click(analyze)
+
+main_plot = row(main_fig, widgetbox(dropdown, range_dropdown))
 curdoc().add_root(main_plot)

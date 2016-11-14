@@ -30,9 +30,9 @@ class RegimeIdentifier(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.model.fit(np.array(self._rate))
-        # print("Transmat_", self.model.transmat_)
-        # print("means_", self.model.means_)
-        # print("covars_", self.model.covars_)
+        print("Transmat_", self.model.transmat_)
+        print("means_", self.model.means_)
+        print("covars_", self.model.covars_)
 
         flatten_convars = self.model.covars_.flatten()
         if(flatten_convars[0] > flatten_convars[1]):
@@ -60,3 +60,53 @@ class RegimeIdentifier(object):
         # print ("one_count: ", one_count)
 
         return is_turbulent
+
+
+    def predict_prob(self):
+        '''
+            Use hmm model to identify regime, totally two hidden states, 0 and 1.
+
+            Emission Distribution for both states: Normal Distributions
+
+            State 0: stable state, the hidden state with low variance
+            State 1: turbulance state, the hidden state with high variance
+
+            return a list of bool
+                set to true if in turbulance state
+            
+        '''
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.model.fit(np.array(self._rate))
+        print("Transmat_", self.model.transmat_)
+        print("means_", self.model.means_)
+        print("covars_", self.model.covars_)
+
+        flatten_convars = self.model.covars_.flatten()
+        if(flatten_convars[0] > flatten_convars[1]):
+            turbulance_state = 0
+        else:
+            turbulance_state = 1
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            Z = self.model.predict_proba(np.array(self._rate))
+        # print ("Turbulance State: ", turbulance_state)
+
+        #return a list of probs of turbulance
+        return [p[turbulance_state] for p in Z]
+
+        
+        # zero_count = 0
+        # one_count = 0
+        # for i,e in enumerate(list(Z.flatten())):
+        #     if e == 0:
+        #         zero_count += 1
+        #     else:
+        #         #print (i)
+        #         one_count += 1
+
+        # print("Len: ", len(self._rate))
+        # print ("Zero Count: ", zero_count)
+        # print ("one_count: ", one_count)
+
