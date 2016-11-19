@@ -22,12 +22,18 @@ class MainHandler(BaseHandler):
 class VisualHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('visualization.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/daily_what_happened_since")
+        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/daily_what_happened_since")
 
 class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('prediction.html',page="prediction", user=self.current_user,page_link="http://localhost:5006/knn-prediction")
+        self.render('page.html',page="prediction", user=self.current_user,page_link="http://localhost:5006/knn-prediction")
+
+class RegimeHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render('page.html',page="regime", user=self.current_user,page_link="http://localhost:5006/regime_shift")
+
 
 class LogoutHandler(BaseHandler):
     # @tornado.web.authenticated
@@ -82,6 +88,8 @@ if __name__ == '__main__':
         (r'/main', MainHandler),
         (r'/visual',VisualHandler),
         (r'/predict',PredictionHandler),
+        (r'/regime',RegimeHandler),
+
         (r'/logout', LogoutHandler)
     ], **settings)
 
