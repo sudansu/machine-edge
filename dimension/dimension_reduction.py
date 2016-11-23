@@ -2,11 +2,15 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 
 class Dim_Red:
-    def SetSource(self, option, source):
+
+    def SetOptions(self, option):
+        self._option = option
+
+    def SetSource(self, source):
         self._source = source
         self._rate = np.empty([len(source), len(source[0])])        
 
-        self._option = option
+        # self._option = option
 
         for i in range(len(self._rate)):
             self._rate[i][0] = 1
@@ -83,7 +87,7 @@ class Dim_Red:
         dist_min = 1e99
         mark_min = 0
 
-        print("cluster: ", cluster)
+        # print("cluster: ", cluster)
 
         for c in cluster:
             max_dis = 0
