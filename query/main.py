@@ -18,9 +18,9 @@ from bokeh.layouts import gridplot, row, column, widgetbox, layout
 from bokeh.plotting import figure
 from bokeh.document import Document
 import numpy as np
-import talib
-from talib.abstract import *
-from talib import MA_Type
+#import talib
+#from talib.abstract import *
+#from talib import MA_Type
 
 
 def Reset():
@@ -91,9 +91,9 @@ def PrepareFigures():
         inc_len = len(mids[inc])
         dec_len = len(mids[dec])
         datasource[key] = ColumnDataSource(dict(i=df.index, high=df.high, low = df.low, close=df.close, open=df.open, color=['black']*len(df.index)))
-        datasource_inc[key] = ColumnDataSource(dict(mids=mids[inc], spans=spans[inc], i=df.index[inc], 
+        datasource_inc[key] = ColumnDataSource(dict(mids=mids[inc], spans=spans[inc], i=df.index[inc],
             color=["#D5E1DD"]*inc_len, line_color=['black']*inc_len))
-        datasource_dec[key] = ColumnDataSource(dict(mids=mids[dec], spans=spans[dec], i=df.index[dec], 
+        datasource_dec[key] = ColumnDataSource(dict(mids=mids[dec], spans=spans[dec], i=df.index[dec],
             color=["#F2583E"]*dec_len, line_color=['black']*dec_len))
         #seg[key] = p[key].segment(df.index, df.high, df.index, df.low, color=colors)
         seg[key] = p[key].segment('i', 'high', 'i', 'low', color='color', source = datasource[key])
