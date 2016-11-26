@@ -77,7 +77,7 @@ def PrepareFigures():
         colors = np.empty(len(df.index), dtype=object)
         colors.fill('red')
 
-        width = len(df.index)*20
+        width = 800 #len(df.index)*20
         p[key] = figure(x_axis_type="datetime", tools=TOOLS, title = key+" candlestick chart", plot_width=width, plot_height=200, name=key)
         p[key].xaxis.major_label_orientation = pi/4
         p[key].grid.grid_line_alpha=0.3
