@@ -8,21 +8,30 @@ class Dim_Red:
 
     def SetSource(self, source):
         self._source = source
-        self._rate = np.empty([len(source), len(source[0])])        
+        self._rate = self.SetNormRate(source)
+
+    def SetRate(self, source):
+
+        rate = np.empty([len(source), len(source[0])])        
 
         # self._option = option
 
-        for i in range(len(self._rate)):
-            self._rate[i][0] = 1
-            for j in range(1,len(self._rate[i])):
-                self._rate[i][j] = source[i][j] / source[i][j-1]
-            # print(self._rate[i])
-            # input()
+        for i in range(len(rate)):
+            rate[i][0] = 1
+            for j in range(1,len(rate[i])):
+                rate[i][j] = source[i][j] / source[i][j-1]
+        return rate
 
-        # for i in range(len(self._rate)):
-        #     print(i, " ", self._rate[i])
+    def SetNormRate(self, source):
+        rate = np.empty([len(source), len(source[0])])        
+        for i in range(len(rate)):
+            min_s = min(source[i])
+            max_s = max(source[i])
 
+            for j in range(1, len(rate[i])):
+                rate[i][j] = (source[i][j] - min_s) / (max_s - min_s)
 
+        return rate
 
     def __Dtw(self, f, s1, s2):
         # print("s1",s1)
@@ -71,15 +80,19 @@ class Dim_Red:
         return result
 
     def GetRepre(self, dists, labels,num_cluster):
-
-        result = []
+        '''
+        return a dict: repre -> a list of other options in cluster
+        '''
+        result = dict() 
         for i in range(num_cluster):
             cluster = []
             for j in range(len(labels)):
                 if labels[j] == i:
                     cluster.append(j)
-            result.append(self.__GetRepre(dists, cluster))
+            repre = self.__GetRepre(dists, cluster)
+            cluster.remove(repre)
 
+            result[repre] = cluster
         return result
 
     def __GetRepre(self, dists, cluster):
@@ -96,8 +109,8 @@ class Dim_Red:
             if dist_min > max_dis:
                 dist_min = max_dis
                 mark_min = c
-        print("dist_min: ", dist_min)
-        print("mark_min: ", mark_min)
+        # print("dist_min: ", dist_min)
+        # print("mark_min: ", mark_min)
         return mark_min
 
 
