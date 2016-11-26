@@ -19,10 +19,20 @@ class MainHandler(BaseHandler):
     def get(self):
         self.render('main.html',page=None, user=self.current_user)
 
+class DimRedHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render('page.html',page="dimension", user=self.current_user,page_link="http://localhost:5006/dimension")
+
+class QueryHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render('page.html',page="query", user=self.current_user,page_link="http://localhost:5006/query")
+
 class VisualHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/daily_what_happened_since")
+        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/visualization")
 
 class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
@@ -89,7 +99,8 @@ if __name__ == '__main__':
         (r'/visual',VisualHandler),
         (r'/predict',PredictionHandler),
         (r'/regime',RegimeHandler),
-
+        (r'/query',QueryHandler),
+        (r'/dimension',DimRedHandler),
         (r'/logout', LogoutHandler)
     ], **settings)
 
