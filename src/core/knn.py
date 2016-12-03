@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from common import utils
+from dist.dtw import DynamicTimeWarping
 
 class KnnGaussianPrediction:
     """
@@ -12,10 +13,12 @@ class KnnGaussianPrediction:
     ----------
       _src: list(float)
         internal representation of current source (change rate/norm)
+      _dtw: DynamicTimeWarping
+        instance for computing dtw
     """
 
     def __init__(self):
-        pass
+        self._dtw = DynamicTimeWarping()
 
     def fit(self, src):
         """
@@ -120,7 +123,7 @@ class KnnGaussianPrediction:
         ret = []
         matrix = np.empty([l+1, l+1])
         for i in range(0, len(self._src) - l + 1):
-            score = self.__Dtw(matrix, self._src[start:end], self._src[i:i+l])
+            score = self._dtw.distance(self._src[start:end], self._src[i:i+l])
             ret.append([score, i])
         return ret
 
