@@ -4,11 +4,15 @@ def get_source_change_rate(src):
     """
     Get change rate from a source list.
 
-    Args:
-        src: A list of float values
+    Args
+    ----
+      src: list(float)
+        original source
 
-    Returns:
-        A list of float values
+    Returns
+    -------
+      list(float)
+        computed change rate
     """
     rate = np.empty(len(src))
     rate[0] = 1.0
@@ -20,11 +24,15 @@ def get_source_norm(src):
     """
     Get normalized values from a source list.
 
-    Args:
-        src: A list of float values
+    Args
+    ----
+      src: list(float)
+        original source
 
-    Returns:
-        A list of float values
+    Returns
+    -------
+      list(float)
+        normalized source
     """
     norm = np.empty(len(src))
     min_v = min(src)

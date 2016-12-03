@@ -2,8 +2,10 @@ import numpy as np
 
 class DynamicTimeWarping:
     """
-    Attributes:
-        _f: A 2d array as buffer for computing distance
+    Attributes
+    ----------
+      _f: 2d matrix(float)
+        buffer for computing distance
     """
 
     def __init__(self):
@@ -13,12 +15,17 @@ class DynamicTimeWarping:
         """
         Get DTW distance
 
-        Args:
-            s1: First list of float
-            s2: Second list of float
+        Args
+        ----
+          s1: list(float)
+            first source list
+          s2: list(float)
+            second source list
 
-        Returns:
-            A float value as computed DTW distance
+        Returns
+        -------
+        float
+          computed DTW distance
         """
         assert len(s1) == len(s2)
         l = len(s1)
