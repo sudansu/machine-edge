@@ -327,5 +327,8 @@ def main():
     plot = column(main_plot, knn_plot)
     curdoc().add_root(plot)
     
+    #Populate the graph data
+    ChangeSource(option_dropdown.value)
+    
 if __name__ == '__main__':
     main()
