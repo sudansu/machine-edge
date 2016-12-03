@@ -300,17 +300,24 @@ def main():
         * Populate data for graph to display
     '''
     
-    global option_dropdown = CreateDropdown()
+    global option_dropdown
+    global main_figure
+    global knn_figures
+    global predict_figure
+    global knn_predictor
+    global redis_source
+    
+    option_dropdown = CreateDropdown()
     option_dropdown.on_click(ChangeSource)
     
     predict_button = Button(label="Predict!", button_type="warning")
     predict_button.on_click(Predict)
     
-    global main_figure = CreateMainFigure()
-    global knn_figures = CreateKnnFigures()
-    global predict_figure = CreatePredictFigure()
-    global knn_predictor = knn.KnnGaussianPrediction()
-    global redis_source = redis.RedisSource()
+    main_figure = CreateMainFigure()
+    knn_figures = CreateKnnFigures()
+    predict_figure = CreatePredictFigure()
+    knn_predictor = knn.KnnGaussianPrediction()
+    redis_source = redis.RedisSource()
     
     pred_plot = column(widgetbox(option_dropdown, predict_button), predict_figure)
     main_plot = row(main_figure, pred_plot)
