@@ -308,7 +308,7 @@ def main():
     global knn_predictor
     global redis_source
     
-    redis_source = redis.RedisSource()
+    redis_source = redis_io.RedisSource()
 
     option_dropdown = CreateDropdown(redis_source.options())
     option_dropdown.on_click(ChangeSource)
