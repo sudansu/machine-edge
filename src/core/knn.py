@@ -6,7 +6,7 @@ from dist.dtw import DynamicTimeWarping
 
 class KnnGaussianPrediction:
     """
-    Give a source and a choosen sub-interval, to find kNN of that change
+    Given a source and a choosen sub-interval, to find kNN of that change
     pattern, and predict future plots using Gaussian processing
 
     Attributes
@@ -14,7 +14,7 @@ class KnnGaussianPrediction:
       _src: list(float)
         internal representation of current source (change rate/norm)
       _dtw: DynamicTimeWarping
-        instance for computing dtw
+        tool for computing dtw
     """
 
     def __init__(self):
