@@ -10,11 +10,15 @@ redis_source = None
 main_figure = None
 knn_figures = None
 predict_figure = None
-
+option_dropdown = None
 # global configuration
-look_ahead = 3
+kLOOK_AHEAD = 3
 kNUM_KNN = 5
 kNUM_SHOW = 5
+
+#engine for prediction
+knn_predictor = None
+
 
 def CreateDropdown(_options):
     '''Create the dropdown to select data source, e.g, aud, sgd ...
@@ -171,7 +175,7 @@ def UpdatePredictFigure(predict_fig, redis_src, option, inds_min, indx_max, mean
     future_close.append(_old_close[-1])
 
     pre_close = _old_close[-1]
-    for i in range(1,look_ahead+1):
+    for i in range(1,kLOOK_AHEAD+1):
         _s = _old_index[-1] + _step * i
         future_index.append(_s)
         future_close.append(pre_close * (mean_rates[i - 1] + stv_rate))
@@ -183,3 +187,136 @@ def UpdatePredictFigure(predict_fig, redis_src, option, inds_min, indx_max, mean
    
     _d4['index'] = future_index
     _d4['close'] = future_close
+
+def Predict():
+   '''A handler to execute when clicking the prediction button
+   
+   Several things to do:
+        * Get the selected points
+        * Get a list of similar segments for selected points
+        * Update one knn figure for each similar segment in the order of similarity
+        * Predict the mean and stdv of change rates based on the similar segments
+        * Update the prediction figure accordingly
+   '''
+
+    global main_figure
+    global knn_figures
+    global predict_figure
+    global redis_source
+    
+    _inds = sorted(main_source.selected['1d']['indices'])
+    # skip if none
+    if (len(_inds) == 0):
+        return
+    
+    _inds_min = _inds[0]
+    _inds_max = _inds[-1] + 1
+
+    # print ("_inds_min")
+    # print (_inds_min)
+
+    # print("_inds_max")
+    # print(_inds_max)
+    
+    # _w a list of tuples. The list contains kNUM_KNN tuples.
+    # Each tuple has 2 elements. 
+    #   The first element is the distance. 
+    #   The second element is the start index of the similar segment.
+    _w = knn_predictor.get_knn(_inds_min, _inds_max, kNUM_KNN)
+    print(_w)
+    # update knn fig
+    option = option_dropdown.value
+    for i in range(0, kNUM_SHOW):
+        knn_fig = knn_figures[i]
+        seg_indx_min = _w[i][1]
+        seg_indx_max = _w[i][1]  + _inds_max - _inds_min
+       
+        UpdateKnnFigure(knn_fig, redis_source, option, seg_indx_min, seg_indx_max)
+        knn_fig.title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
+    # update pred fig
+    # _avg, _min, _max = knn_pred.Predict(_inds_min, _inds_max, _w)
+    mean_rates,stv_rate = knn_predictor.predict(_inds_min, _inds_max, kNUM_KNN,kLOOK_AHEAD)
+    UpdatePredictFigure(predict_figure, redis_source, option, _inds_min, _inds_max,mean_rates,stv_rate)
+    
+def ChangeSource(new):
+    '''The function to be triggered when users change data source in option dropdown
+    
+        The followings step will go through:
+            * Retieve all data for new option
+            * Provide new data for knn predictor
+            * Update the data for main figure and replot
+            * Clear all the data in knn figures and prediction figures
+            
+    Args:
+        new: the string of newly selected data source, e.g, aud, sgd ...
+    '''
+    
+    global main_figure
+    global redis_source
+    global knn_predictor
+    global knn_figures
+    global predict_figure
+    global main_figure
+    
+    _df = redis_source.data_frame(option)
+    knn_predictor.fit(_df.close)
+    
+    main_fig.title.text = new + " (daily)"
+    option_dropdown.label = new
+    
+    UpdateMainFigure(main_figure, redis_source, new)
+    
+    
+    # print ("Change Source: ")
+    # print ("Type of main source data index")
+    # print (type(main_source.data["index"]))
+ 
+    # Clear the source for knn figures
+    for i in range(0, kNUM_SHOW):
+        knn_fig = knn_figures[i]
+        _d1 = knn_fig.line.source.data
+        _d2 = knn_fig.circle.source.data
+        
+        knn_fig.title.text = "Top " + str(i+1) + " NN"
+        _d1['index'] = []
+        _d1['close'] = []
+        _d2['index'] = []
+        _d2['close'] = []
+    
+    #Clear the source for predict figures
+    predict_figure.line.source['index'] = []
+    predict_figure.line.source['close'] = []
+    predict_figure.circle.source['index'] = []
+    predict_figure.circle.source['close'] = []  
+    predict_figure.patch.source['index'] = []
+    predict_figure.patch.source['close'] = []
+    
+def main():
+    '''Main program to execute when server starts up
+    
+    Steps:
+        * Create figures, widgets, redis source and knn-predictor and make them global
+        * Arrange the figures and plot
+        * Populate data for graph to display
+    '''
+    
+    global option_dropdown = CreateDropdown()
+    option_dropdown.on_click(ChangeSource)
+    
+    predict_button = Button(label="Predict!", button_type="warning")
+    predict_button.on_click(Predict)
+    
+    global main_figure = CreateMainFigure()
+    global knn_figures = CreateKnnFigures()
+    global predict_figure = CreatePredictFigure()
+    global knn_predictor = knn.KnnGaussianPrediction()
+    global redis_source = redis.RedisSource()
+    
+    pred_plot = column(widgetbox(option_dropdown, predict_button), predict_figure)
+    main_plot = row(main_figure, pred_plot)
+    knn_plot = row(knn_figures)
+    plot = column(main_plot, knn_plot)
+    curdoc().add_root(plot)
+    
+if __name__ == '__main__':
+    main()
