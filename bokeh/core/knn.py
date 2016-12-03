@@ -88,7 +88,6 @@ class KnnGaussianPrediction:
             x = []
             min_v = min(self._src[top_k[i][1]:top_k[i][1]+l])
             max_v = max(self._src[top_k[i][1]:top_k[i][1]+l])
-            print (min_v, max_v)
             for j in range(top_k[i][1], offset):
                 x.append((self._src[j] - min_v) / (max_v - min_v))
                 # x.append((self._src[j])
@@ -109,8 +108,8 @@ class KnnGaussianPrediction:
         np_segment = np.array(input_segment)
         # print("np_segment: " + str(np_segment))
         y_preds, stds = self._gp.predict(np_segment, return_std=True)
-        print ("y_pred: " + str(y_preds))
-        print("std: " + str(stds))
+        # print ("y_pred: " + str(y_preds))
+        # print("std: " + str(stds))
         min_v = min(self._src[start:end])
         max_v = max(self._src[start:end])
         ret_preds = y_preds[0] * (max_v - min_v) + min_v
