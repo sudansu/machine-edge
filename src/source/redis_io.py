@@ -97,6 +97,27 @@ class RedisSource:
           ret.append(self._data[_][start_point : end_point])
         return ret
 
+    def all_data_frames_dict(self, start_point=None, end_point=None):
+        """
+        Get all data frames within a time interval
+
+        Parameters
+        ----------
+        start_point: int
+          optional, start position of the dataframe
+        end_point: int
+          optional, end position of the dataframe
+
+        Returns
+        -------
+        list(DataFrame)
+          a dict of DataFrames
+        """
+        ret = {}
+        for _ in self._sec_list:
+            ret[_] = self._data[_][start_point:end_point]
+        return ret
+
 if __name__ == "__main__":
     rs = RedisSource(365)
     options = rs.options()
