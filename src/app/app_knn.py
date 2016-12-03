@@ -116,3 +116,70 @@ def UpdateMainFigure(main_figure, redis_source, option):
      main_figure.line.source = _new_source
      
      main_figure.title.text = option + " (daily)"
+
+def UpdateKnnFigure(knn_fig, redis_src, option, inds_min, indx_max):
+    '''Update the data shown on one knn figure based on the option currency value in a range
+    
+        Args:
+            knn_fig: the knn bokeh figure to be updated for display
+            redis_src: a RedisSource instance to provide data
+            option: the currency whose value will be plotted
+            indx_min: the start index of the range
+            indx_max: the end index of the range
+     '''
+    _df = redis_source.data_frame(option)
+    _d2 = knn_fig.line.source.data
+    _d3 = knn_fig.circle.source.data
+    _src_len = inds_max - inds_min
+    _start = max(0, inds_min - _src_len//2)
+    _end = inds_max + _src_len//2
+    _d2['index'] = _df.index[_start:_end]
+    _d2['close'] = _df.close[_start:_end]
+    _d3['index'] = _df.index[inds_min:inds_max]
+    _d3['close'] = _df.close[inds_min:inds_max]
+    
+def UpdatePredictFigure(predict_fig, redis_src, option, inds_min, indx_max, mean_rates, stv_rate):
+    '''Update the data shown on the prediction figure based on the option currency value in a range
+    
+        Args:
+            predict_fig: the prediction bokeh figure to be updated for display
+            redis_src: a RedisSource instance to provide data
+            option: the currency whose value will be plotted
+            indx_min: the start index of the range
+            indx_max: the end index of the range
+            mean_rates: a list of mean change rates for predicted look_ahead points
+            stv_rates: a list of stdv change rate for predicted look_ahead points
+     '''
+    _df = redis_source.data_frame(option)
+    _old_index = list(_df.index[inds_min:inds_max])
+    _old_close = list(_df.close[inds_min:inds_max])    
+
+    _step = _df.index[inds_min+1] - _df.index[inds_min]
+
+    _d2 = predict_fig.line.data #line source
+    _d3 = predict_fig.circle.data #current source (Circle)
+    _d4 = predict_fig.patch.data #future source (Patch)
+
+    _d2['index'] = _old_index
+    _d2['close'] = _old_close   
+    _d3['index'] = _old_index
+    _d3['close'] = _old_close 
+    
+    future_index = []
+    future_close = []
+    future_index.append(_old_index[-1])
+    future_close.append(_old_close[-1])
+
+    pre_close = _old_close[-1]
+    for i in range(1,look_ahead+1):
+        _s = _old_index[-1] + _step * i
+        future_index.append(_s)
+        future_close.append(pre_close * (mean_rates[i - 1] + stv_rate))
+
+    for i in range(look_ahead,0,-1):
+        _s = _old_index[-1] + _step * i
+        future_index.append(_s)
+        future_close.append(pre_close * (mean_rates[i - 1] - stv_rate))
+   
+    _d4['index'] = future_index
+    _d4['close'] = future_close
