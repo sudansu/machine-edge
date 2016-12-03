@@ -317,6 +317,8 @@ def main():
     predict_button.on_click(Predict)
     
     main_figure = CreateMainFigure()
+    main_figure.add_tools(BoxSelectTool(dimensions=["width"]))
+
     knn_figures = CreateKnnFigures()
     predict_figure = CreatePredictFigure()
     knn_predictor = knn.KnnGaussianPrediction()
