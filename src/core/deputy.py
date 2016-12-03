@@ -4,7 +4,7 @@ import numpy as np
 from common import utils
 from dist.dtw import DynamicTimeWarping
 
-class RepresentitiveSelection:
+class RepresentativeSelection:
     """
     Given a list of source, to cluster them into K clusters, and inside each
     cluster find the most representative source
