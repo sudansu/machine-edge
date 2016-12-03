@@ -19,7 +19,7 @@ class RegimeShiftIdentifier:
     """
 
     def __init__(self):
-        self.model = hmm.GaussianHMM(n_components=2, covariance_type="spherical",n_iter=200)
+        self._model = hmm.GaussianHMM(n_components=2, covariance_type="spherical",n_iter=200)
 
     def fit(self, src):
         """
@@ -43,16 +43,16 @@ class RegimeShiftIdentifier:
         """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self.model.fit(np.array(self._rate))
-        print("Transmat_", self.model.transmat_)
-        print("means_", self.model.means_)
-        print("covars_", self.model.covars_)
-        flatten_convars = self.model.covars_.flatten()
+            self._model.fit(np.array(self._src))
+        print("Transmat_", self._model.transmat_)
+        print("means_", self._model.means_)
+        print("covars_", self._model.covars_)
+        flatten_convars = self._model.covars_.flatten()
         if(flatten_convars[0] > flatten_convars[1]):
             turbulance_state = 0
         else:
             turbulance_state = 1
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            Z = self.model.predict_proba(np.array(self._rate))
+            Z = self._model.predict_proba(np.array(self._src))
         return [p[turbulance_state] for p in Z]
