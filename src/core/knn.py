@@ -15,10 +15,13 @@ class KnnGaussianPrediction:
         internal representation of current source (change rate/norm)
       _dtw: DynamicTimeWarping
         tool for computing dtw
+      _gp: GaussianProcessingRegressor
+        instance of gaussian predictor
     """
 
     def __init__(self):
         self._dtw = DynamicTimeWarping()
+        self._gp = GaussianProcessRegressor(n_restarts_optimizer=3)
 
     def fit(self, src):
         """
@@ -92,13 +95,12 @@ class KnnGaussianPrediction:
         np_Y = np.array(Y)
         print("np_X = " + str(np_X))
         print("np_Y = " + str(np_Y))
-        gp = GaussianProcessRegressor(n_restarts_optimizer=3)
         # Fit to data using Maximum Likelihood Estimation of the parameters
-        gp.fit(np_X, np_Y)
+        self._gp.fit(np_X, np_Y)
         input_segment = [self._rate[start:end]]
         np_segment = np.array(input_segment)
         print("np_segment: " + str(np_segment))
-        y_preds,stds = gp.predict(np_segment,return_std=True  )
+        y_preds,stds = self._gp.predict(np_segment,return_std=True)
         print ("y_pred: " + str(y_preds))
         print("std: " + str(stds))
         return y_preds[0], stds[0]

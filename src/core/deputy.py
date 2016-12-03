@@ -15,6 +15,8 @@ class RepresentitiveSelection:
         internal representation of a list of sources (normalized)
       _dtw: DynamicTimeWarping
         tool for computing dtw
+      _clustering: AgglomerativeClustering
+        instance of clustering model
       _dists: list(list(float))
         internal buffer for mdistanc eatrix
       _labels: list(int)
@@ -23,6 +25,8 @@ class RepresentitiveSelection:
 
     def __init__(self):
         self._dtw = DynamicTimeWarping()
+        self._clustering = AgglomerativeClustering(linkage='complete',
+                           n_clusters=num_cluster, affinity="precomputed")
 
     def fit(self, srcs):
         """
@@ -52,9 +56,7 @@ class RepresentitiveSelection:
             cluster label of each source with value in between [0, k)
         """
         self._dists = self.__cal_dist_matrix()
-        clustering = AgglomerativeClustering(linkage='complete',
-                     n_clusters=num_cluster, affinity="precomputed")
-        self._labels = clustering.fit_predict(self._dists)
+        self._labels = self._clustering.fit_predict(self._dists)
         return self._labels.copy()
 
     def find_representative(self, cluster_id):
