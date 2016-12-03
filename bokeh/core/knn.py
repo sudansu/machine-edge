@@ -33,7 +33,8 @@ class KnnGaussianPrediction:
           src: list(double)
             source to predict
         """
-        self._src = utils.get_source_change_rate(src)
+        self._src = src
+        # self._src = utils.get_source_change_rate(src)
 
     def get_knn(self, start, end, k):
         """
@@ -85,12 +86,17 @@ class KnnGaussianPrediction:
         for i in range(k):
             offset = top_k[i][1] + l
             x = []
+            min_v = min(self._src[top_k[i][1]:top_k[i][1]+l])
+            max_v = max(self._src[top_k[i][1]:top_k[i][1]+l])
+            print (min_v, max_v)
             for j in range(top_k[i][1], offset):
-                x.append(self._src[j])
+                x.append((self._src[j] - min_v) / (max_v - min_v))
+                # x.append((self._src[j])
             X.append(x)
             y = []
             for j in range(look_ahead):
-                y.append(self._src[offset + j])
+                y.append((self._src[offset + j] - min_v) / (max_v - min_v))
+                # y.append(self._src[offset + j])
             Y.append(y)
         np_X = np.array(X)
         np_Y = np.array(Y)
@@ -98,13 +104,18 @@ class KnnGaussianPrediction:
         # print("np_Y = " + str(np_Y))
         # Fit to data using Maximum Likelihood Estimation of the parameters
         self._gp.fit(np_X, np_Y)
-        input_segment = [self._src[start:end]]
+        input_segment = [utils.get_source_norm(self._src[start:end])]
+        # input_segment = [self._src[start:end]]
         np_segment = np.array(input_segment)
         # print("np_segment: " + str(np_segment))
-        y_preds,stds = self._gp.predict(np_segment,return_std=True)
-        # print ("y_pred: " + str(y_preds))
-        # print("std: " + str(stds))
-        return y_preds[0], stds[0]
+        y_preds, stds = self._gp.predict(np_segment, return_std=True)
+        print ("y_pred: " + str(y_preds))
+        print("std: " + str(stds))
+        min_v = min(self._src[start:end])
+        max_v = max(self._src[start:end])
+        ret_preds = y_preds[0] * (max_v - min_v) + min_v
+        ret_stds = stds[0] * (max_v - min_v)
+        return ret_preds, ret_stds
 
     def __cal_distance(self, start, end):
         """
@@ -125,8 +136,11 @@ class KnnGaussianPrediction:
         l = end - start
         ret = []
         matrix = np.empty([l+1, l+1])
-        for i in range(0, len(self._src) - l + 1):
-            score = self._dtw.distance(self._src[start:end], self._src[i:i+l])
+        for i in range(0, len(self._src) - l + 1 - 10): # ignore last few pts
+            src_1 = utils.get_source_norm(self._src[start:end])
+            src_2 = utils.get_source_norm(self._src[i:i+l])
+            score = self._dtw.distance(src_1, src_2)
+            # score = self._dtw.distance(self._src[start:end], self._src[i:i+l])
             ret.append([score, i])
         return ret
 
