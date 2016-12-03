@@ -109,7 +109,7 @@ def ChangeSource(new):
     global regime_analyzer
     
     regime_analyzer.fit(_df.close)
-    
+    main_figure.title.text = new + " (daily)"
     main_data, line_data = CreateSourceData(redis_source, new)
     main_figure.circle.source.data = main_data
     main_figure.multi_line.source.data = line_data
