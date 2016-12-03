@@ -3,6 +3,7 @@ from bokeh.layouts import gridplot, row, column, widgetbox
 from bokeh.models import Circle, ColumnDataSource, BoxSelectTool
 from bokeh.models.widgets import Dropdown, Button
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from source import redis_io
 from core import knn
 
