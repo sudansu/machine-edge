@@ -308,7 +308,9 @@ def main():
     global knn_predictor
     global redis_source
     
-    option_dropdown = CreateDropdown()
+    redis_source = redis.RedisSource()
+
+    option_dropdown = CreateDropdown(redis_source.options())
     option_dropdown.on_click(ChangeSource)
     
     predict_button = Button(label="Predict!", button_type="warning")
@@ -318,7 +320,6 @@ def main():
     knn_figures = CreateKnnFigures()
     predict_figure = CreatePredictFigure()
     knn_predictor = knn.KnnGaussianPrediction()
-    redis_source = redis.RedisSource()
     
     pred_plot = column(widgetbox(option_dropdown, predict_button), predict_figure)
     main_plot = row(main_figure, pred_plot)
