@@ -1,5 +1,5 @@
 import numpy as np
-# from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering
 
 from common import utils
 from dist.dtw import DynamicTimeWarping
@@ -25,8 +25,6 @@ class RepresentativeSelection:
 
     def __init__(self):
         self._dtw = DynamicTimeWarping()
-        self._clustering = AgglomerativeClustering(linkage='complete',
-                           n_clusters=num_cluster, affinity="precomputed")
 
     def fit(self, srcs):
         """
@@ -55,6 +53,8 @@ class RepresentativeSelection:
           list(int)
             cluster label of each source with value in between [0, k)
         """
+        self._clustering = AgglomerativeClustering(linkage='complete',
+                           n_clusters=num_cluster, affinity="precomputed")
         self._dists = self.__cal_dist_matrix()
         self._labels = self._clustering.fit_predict(self._dists)
         return self._labels.copy()
@@ -83,9 +83,9 @@ class RepresentativeSelection:
         """
         Calculate distance matrix
         """
-        dists = np.empty([len(self._srcs), len(self.srcs)])
+        dists = np.empty([len(self._srcs), len(self._srcs)])
         for i in range(len(dists)):
-            dist[i][i] = 0.0
+            dists[i][i] = 0.0
             for j in range(i+1, len(dists)):
                 dists[i][j] = dists[j][i] = self._dtw.distance(self._srcs[i], self._srcs[j])
         return dists
@@ -99,8 +99,15 @@ class RepresentativeSelection:
         for s1 in cluster:
             max_dist = 0
             for s2 in cluster:
-                max_dist = max(max_dist, self._dist[s1][s2])
+                max_dist = max(max_dist, self._dists[s1][s2])
             if opt > max_dist:
                 opt = max_dist
                 mark = s1
         return mark
+
+
+if __name__ == '__main__':
+    r = RepresentativeSelection()
+    r.fit([[1.0,1.1,1.2], [2.0,2.1,2.2]])
+    print('cluster: ', r.cluster(2))
+    print(r.find_representative(0))

@@ -5,12 +5,10 @@ from bokeh.layouts import gridplot, row, column, widgetbox
 
 from sklearn.cluster import AgglomerativeClustering
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from source import redis_io
 from core import deputy
-from plot import FigureSource
 
-figure_srcs_dict = {} #a dict that maps option to its FigureSource
+figure_srcs_dict = {} #a dict that maps option to its figure
 redis_src = None
 repre_analyzer = None
 cluster_slider = None
@@ -26,14 +24,15 @@ def CreateFigForSource(redis_src, option, pre_days):
 			pre_days: the number of the most recent days to consider for finding representative
 
 		Returns:
-			a FigureSource instance
+			a bokeh figure
 	'''
-    df = redis_src.data_frame(option, -pre_days,None)
-    index = df.index[-pre_days:]
+
+	df = redis_src.data_frame(option, -pre_days)
+	index = df.index[-pre_days:]
 	close = df.close[-pre_days:]
 
 	data_source = ColumnDataSource(data=dict(index=index, close=close))
-# data_source = ColumnDataSource(data=dict())
+	# data_source = ColumnDataSource(data=dict())
 	_tools = "pan,wheel_zoom,reset"
 	_fig = figure(width=400, height=350, x_axis_type="datetime", tools=_tools, webgl=True)
 	_fig.line('index', 'close', source=data_source, color='navy', line_alpha=0.5, legend='daily-close')
@@ -50,9 +49,7 @@ def CreateFigForSource(redis_src, option, pre_days):
 	_fig.ygrid.band_fill_color="olive"
 	_fig.ygrid.band_fill_alpha=0.1
 
-	fs = FigureSource(_fig)
-	fs.add_source(data_source)
-	return fs
+	return _fig
 
 def Analyze():
 	'''Function to be triggered when clicking the analyze buttion
@@ -78,15 +75,11 @@ def Analyze():
 
 
 	cluster_count = cluster_slider.value
-	latest_points = range_slider.value
+	pre_points = range_slider.value
 
-	all_dfs = redis_src.all_data_frames_dict(start_point=-pre_days)
+	all_dfs = redis_src.all_data_frames_dict(start_point=-pre_points)
 	repre_data = []
 	for option, df in all_dfs.items():
-		fig_src = figure_srcs_dict[option]
-		fig_src.data['index'] = df.index
-		fig_src.data['close'] = df.close
-
 		repre_data.append(list(df.close))
 
 	repre_analyzer.fit(repre_data)
@@ -96,13 +89,13 @@ def Analyze():
 	#cluster_repres maps cluster reprentative currency index to a list of other currency indice in this cluster
 	for option_id, cluster_id in enumerate(cluster_labels):
 		repre_id = repre_analyzer.find_representative(cluster_id)
-		if repre not in cluster_repres:
+		if repre_id not in cluster_repres:
 			cluster_repres[repre_id] = []
 
 		if  option_id != repre_id:
 			cluster_repres[repre_id].append(option_id)
 
-	print('cluster repres: ', cluster_repres)
+	# print('cluster repres: ', cluster_repres)
 
 	#Reorganize the figure plotting
 	#figures in a row are within one cluster
@@ -114,12 +107,15 @@ def Analyze():
 		# print("cluster: ", cluster)
 		cluster_figs = []
 
-		repre_option = redis_src.option()[repre]
-		cluster_figs.append(figure_srcs_dict[repre_option].fig)
+		repre_option = redis_src.options()[repre]
+		
+
+		# cluster_figs.append(figure_srcs_dict[repre_option].fig)
+		cluster_figs.append(CreateFigForSource(redis_src, repre_option, pre_points))
 
 		for optionID in cluster:
-			option = redis_src.option()[optionID]
-			cluster_figs.append(figure_srcs_dict[option].fig)
+			option = redis_src.options()[optionID]
+			cluster_figs.append(CreateFigForSource(redis_src, option, pre_points))
 
 		cluster_rows.append(row(cluster_figs))
 	fig_col = column(cluster_rows, name="figs")
@@ -145,7 +141,9 @@ def main():
 	redis_src = redis_io.RedisSource()
 	repre_analyzer = deputy.RepresentativeSelection()
 	range_slider = Slider(start=0, end=120, value=90, step=1, title="Latest Date")
-	cluster_slider = Slider(start=1,end=len(redis_src.options), value=4,step=1, title="Number of Clusters"  )
+
+	option_count = len(redis_src.options())
+	cluster_slider = Slider(start=1,end=option_count, value=4,step=1, title="Number of Clusters"  )
 
 	for option in redis_src.options():
 		fs = CreateFigForSource(redis_src, option, range_slider.value)
@@ -159,5 +157,5 @@ def main():
 	plot = column([control_row, fig_container])
 	curdoc().add_root(plot)
 
-
+main()
 
