@@ -85,11 +85,11 @@ class KnnGaussianPrediction:
             offset = top_k[i][1] + l
             x = []
             for j in range(top_k[i][1], offset):
-                x.append(self._rate[j])
+                x.append(self._src[j])
             X.append(x)
             y = []
             for j in range(look_ahead):
-                y.append(self._rate[offset + j])
+                y.append(self._src[offset + j])
             Y.append(y)
         np_X = np.array(X)
         np_Y = np.array(Y)
@@ -97,12 +97,12 @@ class KnnGaussianPrediction:
         print("np_Y = " + str(np_Y))
         # Fit to data using Maximum Likelihood Estimation of the parameters
         self._gp.fit(np_X, np_Y)
-        input_segment = [self._rate[start:end]]
+        input_segment = [self._src[start:end]]
         np_segment = np.array(input_segment)
-        print("np_segment: " + str(np_segment))
+        # print("np_segment: " + str(np_segment))
         y_preds,stds = self._gp.predict(np_segment,return_std=True)
-        print ("y_pred: " + str(y_preds))
-        print("std: " + str(stds))
+        # print ("y_pred: " + str(y_preds))
+        # print("std: " + str(stds))
         return y_preds[0], stds[0]
 
     def __cal_distance(self, start, end):
