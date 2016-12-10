@@ -5,15 +5,14 @@ from bokeh.layouts import gridplot, row, column, widgetbox
 from bokeh.models import Circle, ColumnDataSource, BoxSelectTool
 from bokeh.models.widgets import Dropdown, Button
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from source import redis_io
 from core import regime
-from plot import FigureSource
+from plot.figure_source import FigureSource
 
 redis_source = None
 main_figure_src = None
 option_dropdown = None
-kTURB_THRESHOLD = 0.9
+kTURB_THRESHOLD = 0.85
 regime_analyzer = None
 
 def CreateDropdown(_options):
@@ -42,7 +41,7 @@ def CreateMainFigure():
     _circle_renderer = _fig.circle('index', 'close', source=circle_source, color='color', size='size', legend='daily-close')
 
     # customize figure by setting attributes
-    _fig.title.text = dropdown.default_value + " (daily)"
+    _fig.title.text = option_dropdown.default_value + " (daily)"
     _fig.title.align = "center"
     _fig.legend.location = "top_left"
     _fig.grid.grid_line_alpha=0
@@ -112,12 +111,12 @@ def ChangeSource(new):
     global redis_source
     global regime_analyzer
     
-    _df = redis_src.data_frame(option)
+    _df = redis_source.data_frame(new)
     regime_analyzer.fit(_df.close)
     main_figure_src.fig.title.text = new + " (daily)"
     circle_data, line_data = CreateSourceData(redis_source, new)
-    main_figure_src[0].data = circle_data
-    main_figure.src[1].data = line_data
+    main_figure_src.srcs[0].data = circle_data
+    main_figure_src.srcs[1].data = line_data
 
 def Analyze():
     ''' The function to be triggered when clicking the analysis button
@@ -134,7 +133,7 @@ def Analyze():
     global kTURB_THRESHOLD 
     
     turb_probs = regime_analyzer.predict()
-    
+    #print(turb_probs)
     length = len(main_figure_src.srcs[0].data['index'])    
     colors = ["navy"] * length
     
@@ -142,14 +141,14 @@ def Analyze():
         if turb_prob > kTURB_THRESHOLD:
             colors[i] = "red"
             
-    main_figure_src.srcs[0].data['colors'] = colors
+    main_figure_src.srcs[0].data['color'] = colors
     line_colors = ["navy"] * (length - 1)
 
     for i in range(len(turb_probs) - 1):
         if turb_probs[i] > kTURB_THRESHOLD and turb_probs[i+1] > kTURB_THRESHOLD:
             line_colors[i] = "red"  
             
-    main_figure_src.srcs[1].data['colors'] = colors
+    main_figure_src.srcs[1].data['color'] = colors
     
 def main():
     '''Main program to execute when server starts up
@@ -163,11 +162,10 @@ def main():
     global regime_analyzer
     global main_figure_src
     global option_dropdown
-    
     redis_source = redis_io.RedisSource()
     option_dropdown = CreateDropdown(redis_source.options())
     main_figure_src = CreateMainFigure()
-    regime_analyzer = regime.RegimeShiftPrediction()
+    regime_analyzer = regime.RegimeShiftIdentifier()
     
     option_dropdown.on_click(ChangeSource)
     
@@ -178,4 +176,6 @@ def main():
     curdoc().add_root(main_plot)
     
     #Populate the graph
-    ChangeSource(option_dropdown.value)
+    ChangeSource(option_dropdown.default_value)
+
+main()

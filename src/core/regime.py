@@ -30,7 +30,14 @@ class RegimeShiftIdentifier:
           src: list(double)
             source to predict
         """
-        self._src = utils.get_source_change_rate(src)
+        src_change_rate = utils.get_source_change_rate(src) * 100.0
+        self._src = np.reshape(src_change_rate, (-1,1))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self._model.fit(self._src)
+        print("Transmat_", self._model.transmat_)
+        print("means_", self._model.means_)
+        print("covars_", self._model.covars_)
 
     def predict(self):
         """
@@ -41,12 +48,7 @@ class RegimeShiftIdentifier:
           list(double)
             list of probability that each point is in turbulance state
         """
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self._model.fit(np.array(self._src))
-        print("Transmat_", self._model.transmat_)
-        print("means_", self._model.means_)
-        print("covars_", self._model.covars_)
+
         flatten_convars = self._model.covars_.flatten()
         if(flatten_convars[0] > flatten_convars[1]):
             turbulance_state = 0
@@ -54,5 +56,10 @@ class RegimeShiftIdentifier:
             turbulance_state = 1
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            Z = self._model.predict_proba(np.array(self._src))
+            Z = self._model.predict_proba(self._src)
         return [p[turbulance_state] for p in Z]
+
+if __name__ == '__main__':
+    r = RegimeShiftIdentifier()
+    r.fit([5,6,7,8,9])
+    print(r.predict())
