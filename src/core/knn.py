@@ -76,7 +76,7 @@ class KnnGaussianPrediction:
           list(float), list(float)
             predicted values, standart errors
         """
-        print ("Start Predict...")
+        # print ("Start Predict...")
         k = len(top_k)
         l = end-start
         X = [] # Input samples(shape : n_samples * n_features)
@@ -93,8 +93,8 @@ class KnnGaussianPrediction:
             Y.append(y)
         np_X = np.array(X)
         np_Y = np.array(Y)
-        print("np_X = " + str(np_X))
-        print("np_Y = " + str(np_Y))
+        # print("np_X = " + str(np_X))
+        # print("np_Y = " + str(np_Y))
         # Fit to data using Maximum Likelihood Estimation of the parameters
         self._gp.fit(np_X, np_Y)
         input_segment = [self._src[start:end]]
