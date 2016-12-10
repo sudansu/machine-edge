@@ -1,2 +1,3 @@
 #Start Bokeh Server
-bokeh serve knn-prediction/ query/ regime_shift/ visualization/ dimension/
+cd bokeh/
+bokeh serve app_deputy.py app_explore.py app_knn.py app_query.py app_regime.py

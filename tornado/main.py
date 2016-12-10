@@ -22,27 +22,27 @@ class MainHandler(BaseHandler):
 class DimRedHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="dimension", user=self.current_user,page_link="http://localhost:5006/dimension")
+        self.render('page.html',page="dimension", user=self.current_user,page_link="http://localhost:5006/app_deputy")
 
 class QueryHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="query", user=self.current_user,page_link="http://localhost:5006/query")
+        self.render('page.html',page="query", user=self.current_user,page_link="http://localhost:5006/app_query")
 
 class VisualHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/visualization")
+        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/app_explore")
 
 class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="prediction", user=self.current_user,page_link="http://localhost:5006/knn-prediction")
+        self.render('page.html',page="prediction", user=self.current_user,page_link="http://localhost:5006/app_knn")
 
 class RegimeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="regime", user=self.current_user,page_link="http://localhost:5006/regime_shift")
+        self.render('page.html',page="regime", user=self.current_user,page_link="http://localhost:5006/app_regime")
 
 
 class LogoutHandler(BaseHandler):
