@@ -112,6 +112,7 @@ def ChangeSource(new):
     global redis_source
     global regime_analyzer
     
+    _df = redis_src.data_frame(option)
     regime_analyzer.fit(_df.close)
     main_figure_src.fig.title.text = new + " (daily)"
     circle_data, line_data = CreateSourceData(redis_source, new)
