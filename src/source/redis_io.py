@@ -21,6 +21,12 @@ class RedisSource:
         _raw_list = list(self._db.smembers('daily_sect')) #db
         self._sec_list = list(map(codecs.decode, _raw_list))
 
+        _grp_raw_dict = self._db.hgetall('sect_grp') #db
+        self._sec_grp_df = pd.DataFrame(_raw_list, columns = ['sec'])
+        self._sec_grp_df['grp'] = self._sec_grp_df['sec'].map(_grp_raw_dict)
+        self._sec_grp_df = self._sec_grp_df.applymap(codecs.decode).sort_values('grp')
+        #print(self._sec_grp_df)
+
         #day = 10000
         # prepare 'time since' list dropdown
         _start = pd.to_datetime('today').tz_localize('UTC').tz_convert('Asia/Singapore') - day * BDay()
@@ -36,7 +42,7 @@ class RedisSource:
 
         _time_index = _zset_df[1].map(functools.partial(pd.to_datetime, unit='s'))
         _time_index.name='time'
-        _elements = ['close', 'open', 'high', 'low']
+        _elements = ['close', 'open', 'high', 'low', 'vol30']
         _sec_data = {}
         for _sec in self._sec_list:
             _cols = [_sec + ':' + _ele for _ele in _elements]
@@ -54,6 +60,15 @@ class RedisSource:
           all options
         """
         return self._sec_list
+
+    def groups(self):
+        """
+        Returns
+        -------
+        DataFrame('sec', 'grp')
+          sec to grp map
+        """
+        return self._sec_grp_df
 
     def data_frame(self, option, start_point=None, end_point=None):
         """
@@ -122,6 +137,9 @@ if __name__ == "__main__":
     rs = RedisSource(365)
     options = rs.options()
     print("options are: ", options)
+    print()
+    groups = rs.groups()
+    print(groups)
     print()
     df = rs.data_frame(options[0], None, 10)
     print("data_frame is: ", df)

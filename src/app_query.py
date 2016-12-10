@@ -3,7 +3,6 @@ import pandas as pd
 from pandas.tseries.offsets import BDay
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from source import redis_io
 from core import query
 
@@ -79,7 +78,7 @@ def SelectCandle():
             output = CDL2CROWS(df)
         elif func == 'HAMMER':
             output = CDLHAMMER(df)
-        
+
         c = ['red']*length
         i = 0
         for o in output:
@@ -122,11 +121,11 @@ def PrepareFigures():
 
         inc_len = len(mids[inc])
         dec_len = len(mids[dec])
-        datasource[key] = ColumnDataSource(dict(i=df.index, high=df.high, low = df.low, close=df.close, open=df.open, 
+        datasource[key] = ColumnDataSource(dict(i=df.index, high=df.high, low = df.low, close=df.close, open=df.open,
             color=['black']*len(df.index)))
-        datasource_inc[key] = ColumnDataSource(dict(mids=mids[inc], spans=spans[inc], i=df.index[inc], 
+        datasource_inc[key] = ColumnDataSource(dict(mids=mids[inc], spans=spans[inc], i=df.index[inc],
             color=["#D5E1DD"]*inc_len, line_color=['black']*inc_len))
-        datasource_dec[key] = ColumnDataSource(dict(mids=mids[dec], spans=spans[dec], i=df.index[dec], 
+        datasource_dec[key] = ColumnDataSource(dict(mids=mids[dec], spans=spans[dec], i=df.index[dec],
             color=["#F2583E"]*dec_len, line_color=['black']*dec_len))
         #seg[key] = p[key].segment(df.index, df.high, df.index, df.low, color=colors)
         seg[key] = p[key].segment('i', 'high', 'i', 'low', color='color', source = datasource[key])
