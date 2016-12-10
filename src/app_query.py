@@ -25,6 +25,13 @@ from talib.abstract import *
 from talib import MA_Type
 
 def Reset():
+    '''
+    callback function for Reset button
+    reset the selection condition (all points are selected)
+    update two things: 
+        selected: global stats
+        _mq
+    '''
     global selected
     for _ in _multi_select.value:
         datasource[_].data['color'] = ['black'] * length
@@ -37,10 +44,13 @@ def Reset():
 
 
 def SelectData():
+    '''
+    callback function for condition Apply button
+    apply the new condition based on the current states
+    '''
     global selected
     factor = "close"
-    #print (_select.value, _lower.value, _higher.value)
-    _colors = ['red']*length
+    _colors = ['red']*length # red color means the selected points
     _colors_inc = pd.Series(['#D5E1DD']*length)
     _colors_dec = pd.Series(['#F2583E']*length)
     _l = float(_lower.value)
@@ -50,7 +60,7 @@ def SelectData():
 
     for i in range(0, length):
         if selected[i] == False:
-            _colors_inc[i] = 'white'
+            _colors_inc[i] = 'white' # white color will make the unselected points disappear
             _colors_dec[i] = 'white'
             _colors[i] = 'white'
 
@@ -63,14 +73,18 @@ def SelectData():
         datasource_dec[_].data['color'] = _colors_dec[dec]
         datasource_dec[_].data['line_color'] = pd.Series(_colors)[dec]
 
+
 def SelectCandle():
+    '''
+    callback function for candle Apply button
+    apply the candle condition based on the current states
+    '''
     for _ in _multi_select.value:
         colors_inc = pd.Series(['#D5E1DD']*length)
         colors_dec = pd.Series(['#F2583E']*length)
         df = _data[_]
 
         output = []
-        #print("candlestick:", _, _select_candle.value)
         func = _select_candle.value
         if (func == 'DOJI'):
             output = CDLDOJI(df)
@@ -99,7 +113,31 @@ def SelectCandle():
         datasource_dec[_].data['color'] = colors_dec[dec]
         datasource_dec[_].data['line_color'] = pd.Series(c)[dec]
 
+def ChangeSec():
+    '''
+    callback function for option multi-select Apply button
+    re-draw the sets of figures for the new option set
+    '''
+    _select.options = _multi_select.value
+    _select.value = _multi_select.value[0]
+    rootLayout = curdoc().get_model_by_name('chart')
+    listOfSubLayouts = rootLayout.children
+    plotToRemove = curdoc().get_model_by_name('container')
+    #print("remove: ", _multi_select.value[0], plotToRemove)
+    listOfSubLayouts.remove(plotToRemove)
+    p = PrepareFigures()
+    p_container = column(children=p.values(), name='container')
+    listOfSubLayouts.append(p_container)
+
+
 def PrepareFigures():
+    '''
+    prepare the candle charts
+    Returns
+    -------
+    dict(figure)
+        a dictionary of figures for the current option set
+    '''
     global width
     p = {}
     for _sec in _multi_select.value:
@@ -127,59 +165,49 @@ def PrepareFigures():
             color=["#D5E1DD"]*inc_len, line_color=['black']*inc_len))
         datasource_dec[key] = ColumnDataSource(dict(mids=mids[dec], spans=spans[dec], i=df.index[dec],
             color=["#F2583E"]*dec_len, line_color=['black']*dec_len))
-        #seg[key] = p[key].segment(df.index, df.high, df.index, df.low, color=colors)
         seg[key] = p[key].segment('i', 'high', 'i', 'low', color='color', source = datasource[key])
-        #rect_inc[key] = p[key].rect(df.index[inc], mids[inc], w, spans[inc], fill_color="#D5E1DD", line_color="black")
-        #rect_dec[key] = p[key].rect(df.index[dec], mids[dec], w, spans[dec], fill_color="#F2583E", line_color="black")
         rect_inc[key] = p[key].rect('i', 'mids', w, 'spans', source = datasource_inc[key], fill_color="color", line_color="line_color")
         rect_dec[key] = p[key].rect('i', 'mids', w, 'spans', source = datasource_dec[key], fill_color="color", line_color="line_color")
     return p
 
 
-def ChangeSec():
-    _select.options = _multi_select.value
-    _select.value = _multi_select.value[0]
-    rootLayout = curdoc().get_model_by_name('chart')
-    listOfSubLayouts = rootLayout.children
-    plotToRemove = curdoc().get_model_by_name('container')
-    #print("remove: ", _multi_select.value[0], plotToRemove)
-    listOfSubLayouts.remove(plotToRemove)
-    p = PrepareFigures()
-    p_container = column(children=p.values(), name='container')
-    listOfSubLayouts.append(p_container)
-
-
+# redis source
 _rs = redis_io.RedisSource(100)
 _data = _rs.all_data_frames_dict()
 _sec_list = _rs.options()
 
+# MultiSeriesQuery
 _mq = query.MultiSeriesQuery()
 _mq.fit(_data)
 
-datasource = {}
-datasource_inc = {}
-datasource_dec = {}
-seg = {}
-rect_inc = {}
-rect_dec = {}
-width = 600
-length = len(next(iter(_data.values())))
-selected = [True] * length
+datasource = {} # global datasource 
+datasource_inc = {} # global data with close > open
+datasource_dec = {} # global data with close < open
+seg = {} # global segment data source
+rect_inc = {} # global segment data source with close > open
+rect_dec = {} # global segment data source with close < open
 
+width = 600
+length = len(next(iter(_data.values()))) # the total length of data points
+selected = [True] * length # initial selected states
+
+# option multiselect
 _multi_select = MultiSelect(
     options=_sec_list,
     value = _sec_list[0:3],
     #sizing_mode = "scale_both"
 )
-
+# the multiselect apply button
 _apply_multi = Button(label='Apply', width=60)
 _apply_multi.on_click(ChangeSec)
+
 
 #TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 TOOLS = ""
 
 p = PrepareFigures()
 
+# condition input tab
 _select = Select(title="Conditions:", value=_multi_select.value[0], options=_multi_select.value)
 _lower = TextInput(title="Range", value = '0.0')
 _higher = TextInput(value = '999999999.0')
@@ -189,6 +217,7 @@ _reset = Button(label='Reset', width=60)
 _reset.on_click(Reset)
 select_plot = column(_select, widgetbox(_lower, _higher), row(_apply, _reset))
 
+# candle tab
 candles = ["DOJI", "2CROWS", "HAMMER"]
 _select_candle = Select(title="Candlestick:", value=candles[0], options=candles)
 _apply_candle = Button(label='Apply', width=60)
@@ -197,7 +226,9 @@ _reset_candle = Button(label='Reset', width=60)
 _reset_candle.on_click(Reset)
 candle_plot = column(_select_candle, row(_apply_candle, _reset_candle))
 
+# two tabs, consisting of condition input and candle select
 tabs = Tabs(tabs=[Panel(child=select_plot, title="Query"), Panel(child=candle_plot, title="CandleSticks")])
+
 w = column(_multi_select, _apply_multi, tabs)
 _p_container = column(children=p.values(), name="container")
 _chart = column(_p_container, name="chart")

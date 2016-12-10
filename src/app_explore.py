@@ -17,7 +17,11 @@ import sys
 import os
 from source import redis_io
 
+
 def animate():
+    '''
+    callback function for play button
+    '''
     if button.label == '► Play':
         button.label = '❚❚ Pause'
         curdoc().add_periodic_callback(animate_update, 200)
@@ -25,7 +29,12 @@ def animate():
         button.label = '► Play'
         curdoc().remove_periodic_callback(animate_update)
 
+
 def ChangeTimeSince(new=None):
+    '''
+    callback function for time since Select
+    slice the data according to the start time point
+    '''
     global _data, _data_vol
     _dropdown.value=new
     _dropdown.label=new
@@ -48,7 +57,10 @@ def ChangeTimeSince(new=None):
 
 
 def ChangeSelection():
-    #print(_select.value)
+    '''
+    callback function for apply button for the MultiSelection of options 
+    update the securities/options set displayed in the figure
+    '''
     global _data, _data_vol
     global _max
 
@@ -87,12 +99,21 @@ def ChangeSelection():
 
 
 def slider_update(attrname, old, new):
+    '''
+    callback function for the slider on change action 
+    update the data according to the selected time point
+    '''
     i=_slider.value
     _circle_renderer.data_source.data['y']=list(_data.iloc[:,i])
     _circle_renderer.data_source.data['size']=list(_data_vol.iloc[:,i]*vol_size_fator)
     _text_renderer.data_source.data = ColumnDataSource({'time': [_data.columns[i]]}).data
 
+
 def animate_update():
+    '''
+    update the slider value by 1
+    called by the animate function periodically
+    '''
     value = _slider.value + 1
     if value > _max:
         value = _slider.end
@@ -157,7 +178,6 @@ _dropdown = Dropdown(
     label=_dt_rng_strf[0],
     #width=200
 )
-# dropdown change since start point
 _dropdown.on_click(ChangeTimeSince)
 
 
