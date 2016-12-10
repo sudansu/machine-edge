@@ -6,6 +6,7 @@ from bokeh.models.widgets import Dropdown, Button
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from source import redis_io
 from core import knn
+from plot import FigureSource
 
 redis_source = None
 main_figure = None
@@ -19,7 +20,6 @@ kNUM_SHOW = 5
 
 #engine for prediction
 knn_predictor = None
-
 
 def CreateDropdown(_options):
     '''Create the dropdown to select data source, e.g, aud, sgd ...
@@ -36,7 +36,7 @@ def CreateMainFigure():
     '''Create Main Figure without any data
     
         Return:
-          a bokeh figure
+          a FigureSource instance that encapsulates the figure and its source
     '''
     main_source = ColumnDataSource(data=dict(index=[], close=[]))
     _tools = "pan,box_zoom,wheel_zoom,reset"
@@ -57,7 +57,11 @@ def CreateMainFigure():
     _fig.yaxis.axis_label = 'Price'
     _fig.ygrid.band_fill_color="olive"
     _fig.ygrid.band_fill_alpha=0.1
-    return _fig
+    _fig.add_tools(BoxSelectTool(dimensions=["width"]))
+
+    fs = FigureSource(_fig)
+    fs.add_source(main_source)
+    return fs
 
 def CreateKnnFigures():
     '''Create kNUM_SHOW figures to show most similar segments of the selected points in main figure.
@@ -67,7 +71,8 @@ def CreateKnnFigures():
       Return: 
           a list of kNUM_SHOW bokeh figures, with i-th one shows the the i-th similar segment
      '''
-    _knn_fig = list()
+
+    knn_figure_srcs = []
     for i in range(0, kNUM_SHOW):
         # fig = figure(width=200, height=200, x_axis_type="datetime", webgl=True)
         _fig = figure(width=200, height=200, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
@@ -80,8 +85,12 @@ def CreateKnnFigures():
         _fig.grid.grid_line_alpha=0
         _fig.ygrid.band_fill_color="olive"
         _fig.ygrid.band_fill_alpha=0.1
-        _knn_fig.append(_fig)
-    return _knn_fig
+
+        fs = FigureSource(_fig)
+        fs.add_source(_line_source)
+        fs.add_source(_circle_source)
+        knn_figure_srcs.append(fs)
+    return knn_figure_srcs
 
 def CreatePredictFigure():
     '''Create Figure to show future currency value prediction
@@ -89,7 +98,7 @@ def CreatePredictFigure():
         The figure is initiated without data when created. Data will be populated when users click the prediction button. 
     
         Return:
-          a bokeh figure
+          a FigureSource instance
     '''
     _fig = figure(width=300, height=300, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
     _line_source = ColumnDataSource(data=dict(index=[], close=[]))
@@ -103,38 +112,43 @@ def CreatePredictFigure():
     _fig.grid.grid_line_alpha=0
     _fig.ygrid.band_fill_color="olive"
     _fig.ygrid.band_fill_alpha=0.1
-    return _fig
+
+    fs = FigureSource(_fig)
+    fs.add_source(_line_source)
+    fs.add_source(_current_source)
+    fs.add_source(_future_source)
+    return fs
     
-def UpdateMainFigure(main_figure, redis_source, option):
+def UpdateMainFigure(fig_src, redis_source, option):
     '''Update the data shown on main figure based on the option
     
     Args:
-        main_figure: main Bokeh figure to be updated
+        figure_src: main Bokeh figure source to be updated
         redis_source: a RedisSource instance to provide data
         option: the currency whose value will be plotted
      '''
      
      #Get all data for option
      _df = redis_source.data_frame(option)
-     _new_source = ColumnDataSource(data=dict(index=_df.index, close=_df.close))
-     main_figure.line.source = _new_source
-     main_figure.line.source = _new_source
-     
-     main_figure.title.text = option + " (daily)"
 
-def UpdateKnnFigure(knn_fig, redis_src, option, inds_min, indx_max):
+     fig_src.srcs[0].data['index'] = _df.index
+     fig_src.srcs[0].data['close'] = _df.close
+     fig_src.fig.title.text = option + " (daily)"
+
+def UpdateKnnFigure(knn_fig_src, redis_src, option, inds_min, indx_max):
     '''Update the data shown on one knn figure based on the option currency value in a range
     
         Args:
-            knn_fig: the knn bokeh figure to be updated for display
+            knn_fig_src: the knn FigureSource to be updated to be updated for display
             redis_src: a RedisSource instance to provide data
             option: the currency whose value will be plotted
             indx_min: the start index of the range
             indx_max: the end index of the range
      '''
     _df = redis_source.data_frame(option)
-    _d2 = knn_fig.line.source.data
-    _d3 = knn_fig.circle.source.data
+
+    _d2 = knn_fig_src.srcs[0].data
+    _d3 = knn_fig_src.srcs[1].data
     _src_len = inds_max - inds_min
     _start = max(0, inds_min - _src_len//2)
     _end = inds_max + _src_len//2
@@ -143,11 +157,11 @@ def UpdateKnnFigure(knn_fig, redis_src, option, inds_min, indx_max):
     _d3['index'] = _df.index[inds_min:inds_max]
     _d3['close'] = _df.close[inds_min:inds_max]
     
-def UpdatePredictFigure(predict_fig, redis_src, option, inds_min, indx_max, mean_rates, stv_rate):
+def UpdatePredictFigure(predict_fig_src, redis_src, option, inds_min, indx_max, mean_rates, stv_rate):
     '''Update the data shown on the prediction figure based on the option currency value in a range
     
         Args:
-            predict_fig: the prediction bokeh figure to be updated for display
+            predict_fig_src: the prediction figure source to be updated for display
             redis_src: a RedisSource instance to provide data
             option: the currency whose value will be plotted
             indx_min: the start index of the range
@@ -161,9 +175,9 @@ def UpdatePredictFigure(predict_fig, redis_src, option, inds_min, indx_max, mean
 
     _step = _df.index[inds_min+1] - _df.index[inds_min]
 
-    _d2 = predict_fig.line.data #line source
-    _d3 = predict_fig.circle.data #current source (Circle)
-    _d4 = predict_fig.patch.data #future source (Patch)
+    _d2 = predict_fig_src.srcs[0].data #line source
+    _d3 = predict_fig_src.srcs[1].data #current source (Circle)
+    _d4 = predict_fig_src.srcs[2].data #future source (Patch)
 
     _d2['index'] = _old_index
     _d2['close'] = _old_close   
@@ -200,12 +214,12 @@ def Predict():
         * Update the prediction figure accordingly
    '''
 
-    global main_figure
-    global knn_figures
-    global predict_figure
+    global main_figure_src
+    global knn_figure_srcs
+    global predict_figure_src
     global redis_source
     
-    _inds = sorted(main_source.selected['1d']['indices'])
+    _inds = sorted(main_figure_src.srcs[0].selected['1d']['indices'])
     # skip if none
     if (len(_inds) == 0):
         return
@@ -213,12 +227,6 @@ def Predict():
     _inds_min = _inds[0]
     _inds_max = _inds[-1] + 1
 
-    # print ("_inds_min")
-    # print (_inds_min)
-
-    # print("_inds_max")
-    # print(_inds_max)
-    
     # _w a list of tuples. The list contains kNUM_KNN tuples.
     # Each tuple has 2 elements. 
     #   The first element is the distance. 
@@ -228,16 +236,16 @@ def Predict():
     # update knn fig
     option = option_dropdown.value
     for i in range(0, kNUM_SHOW):
-        knn_fig = knn_figures[i]
+        knn_fig_src = knn_figure_srcs[i]
         seg_indx_min = _w[i][1]
         seg_indx_max = _w[i][1]  + _inds_max - _inds_min
        
-        UpdateKnnFigure(knn_fig, redis_source, option, seg_indx_min, seg_indx_max)
-        knn_fig.title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
+        UpdateKnnFigure(knn_fig_src, redis_source, option, seg_indx_min, seg_indx_max)
+        knn_fig_src.fig.title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
     # update pred fig
     # _avg, _min, _max = knn_pred.Predict(_inds_min, _inds_max, _w)
     mean_rates,stv_rate = knn_predictor.predict(_inds_min, _inds_max, kNUM_KNN,kLOOK_AHEAD)
-    UpdatePredictFigure(predict_figure, redis_source, option, _inds_min, _inds_max,mean_rates,stv_rate)
+    UpdatePredictFigure(predict_figure_src, redis_source, option, _inds_min, _inds_max,mean_rates,stv_rate)
     
 def ChangeSource(new):
     '''The function to be triggered when users change data source in option dropdown
@@ -252,20 +260,19 @@ def ChangeSource(new):
         new: the string of newly selected data source, e.g, aud, sgd ...
     '''
     
-    global main_figure
+    global main_figure_src
     global redis_source
     global knn_predictor
-    global knn_figures
-    global predict_figure
-    global main_figure
+    global knn_figure_srcs
+    global predict_figure_src
     
     _df = redis_source.data_frame(option)
     knn_predictor.fit(_df.close)
     
-    main_fig.title.text = new + " (daily)"
+    main_figure_src.fig.title.text = new + " (daily)"
     option_dropdown.label = new
     
-    UpdateMainFigure(main_figure, redis_source, new)
+    UpdateMainFigure(main_figure_src, redis_source, new)
     
     
     # print ("Change Source: ")
@@ -274,23 +281,18 @@ def ChangeSource(new):
  
     # Clear the source for knn figures
     for i in range(0, kNUM_SHOW):
-        knn_fig = knn_figures[i]
-        _d1 = knn_fig.line.source.data
-        _d2 = knn_fig.circle.source.data
-        
-        knn_fig.title.text = "Top " + str(i+1) + " NN"
-        _d1['index'] = []
-        _d1['close'] = []
-        _d2['index'] = []
-        _d2['close'] = []
+        knn_fig_src = knn_figure_srcs[i]
+        knn_fig_src.fig.title.text = "Top " + str(i+1) + " NN"
+
+        for src in knn_fig_src.srcs:
+            src.data['index'] = []
+            src.data['close'] = []
     
     #Clear the source for predict figures
-    predict_figure.line.source['index'] = []
-    predict_figure.line.source['close'] = []
-    predict_figure.circle.source['index'] = []
-    predict_figure.circle.source['close'] = []  
-    predict_figure.patch.source['index'] = []
-    predict_figure.patch.source['close'] = []
+
+    for src in predict_figure_src.srcs:
+        src.data['index'] = []
+        src.data['close'] = []
     
 def main():
     '''Main program to execute when server starts up
@@ -302,13 +304,14 @@ def main():
     '''
     
     global option_dropdown
-    global main_figure
-    global knn_figures
-    global predict_figure
+    global main_figure_src
+    global knn_figure_srcs
+    global predict_figure_src
     global knn_predictor
     global redis_source
     
     redis_source = redis_io.RedisSource()
+    knn_predictor = knn.KnnGaussianPrediction()
 
     option_dropdown = CreateDropdown(redis_source.options())
     option_dropdown.on_click(ChangeSource)
@@ -316,13 +319,12 @@ def main():
     predict_button = Button(label="Predict!", button_type="warning")
     predict_button.on_click(Predict)
     
-    main_figure = CreateMainFigure()
-    main_figure.add_tools(BoxSelectTool(dimensions=["width"]))
-
-    knn_figures = CreateKnnFigures()
-    predict_figure = CreatePredictFigure()
-    knn_predictor = knn.KnnGaussianPrediction()
+    main_figure_src = CreateMainFigure()
+    knn_figure_srcs = CreateKnnFigures()
+    predict_figure_src = CreatePredictFigure()
     
+
+    #Organize the plot
     pred_plot = column(widgetbox(option_dropdown, predict_button), predict_figure)
     main_plot = row(main_figure, pred_plot)
     knn_plot = row(knn_figures)
