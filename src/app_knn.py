@@ -9,9 +9,9 @@ from core import knn
 from plot import FigureSource
 
 redis_source = None
-main_figure = None
-knn_figures = None
-predict_figure = None
+main_figure_src = None
+knn_figure_srcs = None
+predict_figure_src = None
 option_dropdown = None
 # global configuration
 kLOOK_AHEAD = 3
