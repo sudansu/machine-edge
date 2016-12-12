@@ -118,34 +118,30 @@ def CreatePredictFigure():
     fs.add_source(_future_source)
     return fs
     
-def UpdateMainFigure(fig_src, redis_source, option):
+def UpdateMainFigure(fig_src, df):
     '''Update the data shown on main figure based on the option
     
     Args:
         figure_src: main Bokeh figure source to be updated
-        redis_source: a RedisSource instance to provide data
-        option: the currency whose value will be plotted
+        df: panda data frame that provides close price and datetime
      '''
      
      #Get all data for option
-    _df = redis_source.data_frame(option)
+    df = redis_source.data_frame(option)
 
-    fig_src.srcs[0].data['index'] = _df.index
-    fig_src.srcs[0].data['close'] = _df.close
+    fig_src.srcs[0].data['index'] = df.index
+    fig_src.srcs[0].data['close'] = df.close
     fig_src.fig.title.text = option + " (daily)"
 
-def UpdateKnnFigure(knn_fig_src, redis_src, option, inds_min, inds_max):
+def UpdateKnnFigure(knn_fig_src, df, inds_min, inds_max):
     '''Update the data shown on one knn figure based on the option currency value in a range
     
         Args:
             knn_fig_src: the knn FigureSource to be updated to be updated for display
-            redis_src: a RedisSource instance to provide data
-            option: the currency whose value will be plotted
+            df: panda dataframe instance that provide the all close price and datetime
             indx_min: the start index of the range
             indx_max: the end index of the range
      '''
-
-    _df = redis_src.data_frame(option)
 
     _d2 = knn_fig_src.srcs[0].data
     _d3 = knn_fig_src.srcs[1].data
@@ -154,28 +150,27 @@ def UpdateKnnFigure(knn_fig_src, redis_src, option, inds_min, inds_max):
     _start = max(0, inds_min - _src_len//2)
     _end = inds_max + _src_len//2
 
-    _d2['index'] = _df.index[_start:_end]
-    _d2['close'] = _df.close[_start:_end]
-    _d3['index'] = _df.index[inds_min:inds_max]
-    _d3['close'] = _df.close[inds_min:inds_max]
+    _d2['index'] = df.index[_start:_end]
+    _d2['close'] = df.close[_start:_end]
+    _d3['index'] = df.index[inds_min:inds_max]
+    _d3['close'] = df.close[inds_min:inds_max]
     
-def UpdatePredictFigure(predict_fig_src, redis_src, option, inds_min, inds_max, mean_rates, stv_rate):
+def UpdatePredictFigure(predict_fig_src, df, inds_min, inds_max, mean_rates, stv_rate):
     '''Update the data shown on the prediction figure based on the option currency value in a range
     
         Args:
             predict_fig_src: the prediction figure source to be updated for display
-            redis_src: a RedisSource instance to provide data
-            option: the currency whose value will be plotted
+            df: panda dataframe that provide a currency's all close price and datetime
             indx_min: the start index of the range
             indx_max: the end index of the range
             mean_rates: a list of mean change rates for predicted look_ahead points
             stv_rates: a list of stdv change rate for predicted look_ahead points
      '''
-    _df = redis_src.data_frame(option)
-    _old_index = list(_df.index[inds_min:inds_max])
-    _old_close = list(_df.close[inds_min:inds_max])    
 
-    _step = _df.index[inds_min+1] - _df.index[inds_min]
+    _old_index = list(df.index[inds_min:inds_max])
+    _old_close = list(df.close[inds_min:inds_max])    
+
+    _step = df.index[inds_min+1] - df.index[inds_min]
 
     _d2 = predict_fig_src.srcs[0].data #line source
     _d3 = predict_fig_src.srcs[1].data #current source (Circle)
@@ -192,7 +187,7 @@ def UpdatePredictFigure(predict_fig_src, redis_src, option, inds_min, inds_max, 
     future_close.append(_old_close[-1])
 
     pre_close = _old_close[-1]
-    for i in range(1,kLOOK_AHEAD+1):
+    for i in range(1,kLOOK_AHEAD + 1):
         _s = _old_index[-1] + _step * i
         future_index.append(_s)
         future_close.append(pre_close * (mean_rates[i - 1] + stv_rate))
@@ -237,21 +232,26 @@ def Predict():
     print(_w)
     # update knn fig
     option = option_dropdown.value
+    #TODO(ruanpc) test when the selected option changes, the following value will also change. 
     print('Option: ', option)
     for i in range(0, kNUM_SHOW):
         knn_fig_src = knn_figure_srcs[i]
         seg_indx_min = _w[i][1]
         seg_indx_max = _w[i][1]  + _inds_max - _inds_min
         
-        UpdateKnnFigure(knn_fig_src, redis_source, option, seg_indx_min, seg_indx_max)
+        knn_df = redis_source.data_frame(option) 
+        UpdateKnnFigure(knn_fig_src, knn_df, seg_indx_min, seg_indx_max)
 
         knn_fig_src.fig.title.text = "Top " + str(i+1) + " NN dist(" + format(_w[i][0], '.5f') + ")"
+
     # update pred fig
     # _avg, _min, _max = knn_pred.Predict(_inds_min, _inds_max, _w)
     mean_rates,stv_rate = knn_predictor.predict(_inds_min, _inds_max, _w,kLOOK_AHEAD)
     # print('mean: ', mean_rates)
     # print('stdv: ', stv_rates)
-    UpdatePredictFigure(predict_figure_src, redis_source, option, _inds_min, _inds_max,mean_rates,stv_rate)
+
+    predict_df = redis_source.data_frame(option) 
+    UpdatePredictFigure(predict_figure_src, predict_df, _inds_min, _inds_max,mean_rates,stv_rate)
 
 def ChangeSource(new):
     '''The function to be triggered when users change data source in option dropdown
@@ -272,13 +272,13 @@ def ChangeSource(new):
     global knn_figure_srcs
     global predict_figure_src
     
-    _df = redis_source.data_frame(new)
-    knn_predictor.fit(_df.close)
+    df = redis_source.data_frame(new)
+    knn_predictor.fit(df.close)
     
     main_figure_src.fig.title.text = new + " (daily)"
     option_dropdown.label = new
     
-    UpdateMainFigure(main_figure_src, redis_source, new)
+    UpdateMainFigure(main_figure_src, df)
     
     
     # print ("Change Source: ")
