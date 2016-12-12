@@ -32,6 +32,7 @@ def CreateMainFigure():
         Return:
           a FigureSource instance that encapsulates the figure and its containing data source 
     '''
+
     circle_source = ColumnDataSource(data=dict(index=[], close=[],color=[],size = [],prob = []))
     line_source = ColumnDataSource(data=dict(index=[], close=[], color=[]))
 
@@ -62,33 +63,32 @@ def CreateMainFigure():
     fs.add_source(line_source)
     return fs
 
-def CreateSourceData(redis_src, option):
+def CreateSourceData(df):
     '''Create data for main source and line source for option
     
        Args:
-          redis_src: a RedisSource instance that provide data
-          option: the selected currency to plot on graph
-       
+            df: panda dataframe that provide a currency's all close price and datetime       
        Return:
            a tuple of two dict:(circle_source_data, line_source_data)
     '''
-    _df = redis_src.data_frame(option)
+
+    df = redis_src.data_frame(option)
     # print ("Creating Main Source: ")
     # print ("Type _dt.index")
     # print (type(_df.index))
-    colors = ["navy"] * len(_df.index)
-    probs = ["N.A."] * len(_df.index)
-    sizes = [2] * len(_df.index)
+    colors = ["navy"] * len(df.index)
+    probs = ["N.A."] * len(df.index)
+    sizes = [2] * len(df.index)
 
 
-    circle_source_data = dict(index=_df.index, close=_df.close,color=colors,size = sizes,prob = probs)
+    circle_source_data = dict(index=df.index, close=df.close,color=colors,size = sizes,prob = probs)
 
     idx_line = []
     close_line = []
     colors_line = []
-    for i  in range(len(_df.index) - 1):
-        idx_line.append([_df.index[i], _df.index[i+1]])
-        close_line.append([_df.close[i], _df.close[i+1]])
+    for i  in range(len(df.index) - 1):
+        idx_line.append([df.index[i], df.index[i+1]])
+        close_line.append([df.close[i], df.close[i+1]])
         colors_line.append("navy")
 
     line_source_data = dict(index=idx_line, close=close_line, color=colors_line)
@@ -111,10 +111,10 @@ def ChangeSource(new):
     global redis_source
     global regime_analyzer
     
-    _df = redis_source.data_frame(new)
-    regime_analyzer.fit(_df.close)
+    df = redis_source.data_frame(new)
+    regime_analyzer.fit(df.close)
     main_figure_src.fig.title.text = new + " (daily)"
-    circle_data, line_data = CreateSourceData(redis_source, new)
+    circle_data, line_data = CreateSourceData(df)
     main_figure_src.srcs[0].data = circle_data
     main_figure_src.srcs[1].data = line_data
 
@@ -158,10 +158,12 @@ def main():
         * Arrange the figures and plot
         * Populate data for graph to display
     '''
+    
     global redis_source
     global regime_analyzer
     global main_figure_src
     global option_dropdown
+
     redis_source = redis_io.RedisSource()
     option_dropdown = CreateDropdown(redis_source.options())
     main_figure_src = CreateMainFigure()
