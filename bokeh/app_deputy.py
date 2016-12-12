@@ -14,19 +14,16 @@ repre_analyzer = None
 cluster_slider = None
 range_slider = None
 
-def CreateFigForSource(redis_src, option, pre_days):
+def CreateFigForSource(df):
     '''
         create figure for currency option
         Args:
-            redis_src: a RedisSource instance that provide data
-            option: the currecy for plotting, e.g, sgd, aud ...
-            pre_days: the number of the most recent days to consider for finding representative
+            df: panda dataframe that encapsulates data
 
         Returns:
             a bokeh figure
     '''
 
-    df = redis_src.data_frame(option, -pre_days)
     index = df.index[-pre_days:]
     close = df.close[-pre_days:]
 
@@ -108,11 +105,13 @@ def Analyze():
         
 
         # cluster_figs.append(figure_srcs_dict[repre_option].fig)
-        cluster_figs.append(CreateFigForSource(redis_src, repre_option, pre_points))
+        df = redis_src.data_frame(repre_option, -pre_points)
+        cluster_figs.append(CreateFigForSource(df))
 
         for optionID in cluster:
             option = redis_src.options()[optionID]
-            cluster_figs.append(CreateFigForSource(redis_src, option, pre_points))
+            df = redis_src.data_frame(option, -pre_points)
+            cluster_figs.append(CreateFigForSource(df))
 
         cluster_rows.append(row(cluster_figs))
     fig_col = column(cluster_rows, name="figs")
