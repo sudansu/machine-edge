@@ -72,7 +72,6 @@ def CreateSourceData(df):
            a tuple of two dict:(circle_source_data, line_source_data)
     '''
 
-    df = redis_src.data_frame(option)
     # print ("Creating Main Source: ")
     # print ("Type _dt.index")
     # print (type(_df.index))
@@ -142,6 +141,8 @@ def Analyze():
             colors[i] = "red"
             
     main_figure_src.srcs[0].data['color'] = colors
+    main_figure_src.srcs[0].data['prob'] = turb_probs
+
     line_colors = ["navy"] * (length - 1)
 
     for i in range(len(turb_probs) - 1):

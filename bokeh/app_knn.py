@@ -127,11 +127,9 @@ def UpdateMainFigure(fig_src, df):
      '''
      
      #Get all data for option
-    df = redis_source.data_frame(option)
 
     fig_src.srcs[0].data['index'] = df.index
     fig_src.srcs[0].data['close'] = df.close
-    fig_src.fig.title.text = option + " (daily)"
 
 def UpdateKnnFigure(knn_fig_src, df, inds_min, inds_max):
     '''Update the data shown on one knn figure based on the option currency value in a range
@@ -229,11 +227,9 @@ def Predict():
     #   The first element is the distance. 
     #   The second element is the start index of the similar segment.
     _w = knn_predictor.get_knn(_inds_min, _inds_max, kNUM_KNN)
-    print(_w)
+    # print(_w)
     # update knn fig
     option = option_dropdown.value
-    #TODO(ruanpc) test when the selected option changes, the following value will also change. 
-    print('Option: ', option)
     for i in range(0, kNUM_SHOW):
         knn_fig_src = knn_figure_srcs[i]
         seg_indx_min = _w[i][1]
@@ -279,7 +275,6 @@ def ChangeSource(new):
     option_dropdown.label = new
     
     UpdateMainFigure(main_figure_src, df)
-    
     
     # print ("Change Source: ")
     # print ("Type of main source data index")

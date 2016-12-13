@@ -8,24 +8,23 @@ from sklearn.cluster import AgglomerativeClustering
 from source import redis_io
 from core import deputy
 
-figure_srcs_dict = {} #a dict that maps option to its figure
 redis_src = None
 repre_analyzer = None
 cluster_slider = None
 range_slider = None
 
-def CreateFigForSource(df):
+def CreateFigForSource(df, option):
     '''
         create figure for currency option
         Args:
             df: panda dataframe that encapsulates data
-
+            option: data source, e.g, aud, sgd ...
         Returns:
             a bokeh figure
     '''
 
-    index = df.index[-pre_days:]
-    close = df.close[-pre_days:]
+    index = df.index
+    close = df.close
 
     data_source = ColumnDataSource(data=dict(index=index, close=close))
     # data_source = ColumnDataSource(data=dict())
@@ -73,6 +72,8 @@ def Analyze():
     pre_points = range_slider.value
 
     all_dfs = redis_src.all_data_frames(start_point=-pre_points)
+
+    repre_data = []
     for df in all_dfs:
         repre_data.append(list(df.close))
 
@@ -104,14 +105,13 @@ def Analyze():
         repre_option = redis_src.options()[repre]
         
 
-        # cluster_figs.append(figure_srcs_dict[repre_option].fig)
         df = redis_src.data_frame(repre_option, -pre_points)
-        cluster_figs.append(CreateFigForSource(df))
+        cluster_figs.append(CreateFigForSource(df, repre_option))
 
         for optionID in cluster:
             option = redis_src.options()[optionID]
             df = redis_src.data_frame(option, -pre_points)
-            cluster_figs.append(CreateFigForSource(df))
+            cluster_figs.append(CreateFigForSource(df, option))
 
         cluster_rows.append(row(cluster_figs))
     fig_col = column(cluster_rows, name="figs")
@@ -129,7 +129,6 @@ def main():
     '''
 
     global redis_src
-    global figure_srcs_dict
     global repre_analyzer
     global range_slider
     global cluster_slider
@@ -142,8 +141,8 @@ def main():
     cluster_slider = Slider(start=1,end=option_count, value=4,step=1, title="Number of Clusters"  )
 
     for option in redis_src.options():
-        fs = CreateFigForSource(redis_src, option, range_slider.value)
-        figure_srcs_dict[option] = fs
+        df = redis_src.data_frame(option, -range_slider.value)
+        fs = CreateFigForSource(df, option)
 
     button = Button(label="Analyze!", button_type="warning")
     button.on_click(Analyze)
