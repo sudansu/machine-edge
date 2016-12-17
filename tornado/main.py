@@ -120,5 +120,5 @@ if __name__ == '__main__':
     ], **settings)
 
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8000 )
+    http_server.listen(80 )
     tornado.ioloop.IOLoop.instance().start()
