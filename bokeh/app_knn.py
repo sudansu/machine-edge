@@ -102,10 +102,16 @@ def CreatePredictFigure():
     _fig = figure(width=300, height=300, x_axis_type="datetime", webgl=True, tools=[], toolbar_location=None)
     _line_source = ColumnDataSource(data=dict(index=[], close=[]))
     _fig.line('index', 'close', source=_line_source, color='navy')
+
     _current_source = ColumnDataSource(data=dict(index=[], close=[]))
     _fig.circle('index', 'close', source=_current_source, color='firebrick', size=3)
-    _future_source = ColumnDataSource(data=dict(index=[], close=[]))
-    _fig.patch('index', 'close', source=_future_source, alpha=0.5, color="#99d8c9")
+
+    _future_patch_source = ColumnDataSource(data=dict(index=[], close=[]))
+    _fig.patch('index', 'close', source=_future_patch_source, alpha=0.5, color="#99d8c9")
+
+    _future_circle_source = ColumnDataSource(data=dict(index=[], close=[]))
+    _fig.circle('index', 'close', source=_future_circle_source, color="red", size=5)
+
     _fig.title.text = "GP Predicted Trend"
     _fig.title.align = "center"
     _fig.grid.grid_line_alpha=0
@@ -115,7 +121,8 @@ def CreatePredictFigure():
     fs = FigureSource(_fig)
     fs.add_source(_line_source)
     fs.add_source(_current_source)
-    fs.add_source(_future_source)
+    fs.add_source(_future_patch_source)
+    fs.add_source(_future_circle_source)
     return fs
 
 def UpdateMainFigure(fig_src, df):
@@ -172,7 +179,8 @@ def UpdatePredictFigure(predict_fig_src, df, inds_min, inds_max, preds, preds_st
 
     _d2 = predict_fig_src.srcs[0].data #line source
     _d3 = predict_fig_src.srcs[1].data #current source (Circle)
-    _d4 = predict_fig_src.srcs[2].data #future source (Patch)
+    _d4 = predict_fig_src.srcs[2].data #future patch source 
+    _d5 = predict_fig_src.srcs[3].data #future circle source
 
     _d2['index'] = _old_index
     _d2['close'] = _old_close
@@ -197,6 +205,15 @@ def UpdatePredictFigure(predict_fig_src, df, inds_min, inds_max, preds, preds_st
 
     _d4['index'] = future_index
     _d4['close'] = future_close
+
+    future_circle_index = []
+    future_circle_close = []
+    for i in range(1,kLOOK_AHEAD + 1):
+        _s = _old_index[-1] + _step * i
+        future_circle_index.append(_s)
+        future_circle_close.append(preds[i-1])
+    _d5['index'] = future_circle_index
+    _d5['close'] = future_circle_close
 
 def Predict():
     '''A handler to execute when clicking the prediction button
