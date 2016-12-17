@@ -3,7 +3,13 @@ import tornado.ioloop
 import tornado.web
 import tornado.options
 import os.path
-from tornado.options import define, options
+import sys
+
+def get_bokeh_link(path):
+    link = "http://"
+    link += bokeh_host + "/"
+    link += path
+    return link
 
 class WelcomeHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -22,27 +28,32 @@ class MainHandler(BaseHandler):
 class DimRedHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="dimension", user=self.current_user,page_link="http://localhost:5006/app_deputy")
+        link = get_bokeh_link("app_deputy") 
+        self.render('page.html',page="dimension", user=self.current_user,page_link=link)
 
 class QueryHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="query", user=self.current_user,page_link="http://localhost:5006/app_query")
+        link = get_bokeh_link("app_query") 
+        self.render('page.html',page="query", user=self.current_user,page_link=link)
 
 class VisualHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="visualization", user=self.current_user,page_link="http://localhost:5006/app_explore")
+        link = get_bokeh_link("app_explore") 
+        self.render('page.html',page="visualization", user=self.current_user,page_link=link)
 
 class PredictionHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="prediction", user=self.current_user,page_link="http://localhost:5006/app_knn")
+        link = get_bokeh_link("app_knn") 
+        self.render('page.html',page="prediction", user=self.current_user,page_link=link)
 
 class RegimeHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('page.html',page="regime", user=self.current_user,page_link="http://localhost:5006/app_regime")
+        link = get_bokeh_link("app_regime") 
+        self.render('page.html',page="regime", user=self.current_user,page_link=link)
 
 
 class LogoutHandler(BaseHandler):
@@ -83,7 +94,11 @@ def makeApp():
 
 if __name__ == '__main__':
     # tornado.options.parse_command_line()
-
+    global bokeh_host
+    bokeh_host = "localhost:5006"
+    if len(sys.argv) == 2:
+       bokeh_host = sys.argv[1]
+    print ("bokeh_host: ", bokeh_host) 
     settings = {
         "template_path": os.path.join(os.path.dirname(__file__), "template"),
         "static_path":os.path.join(os.path.dirname(__file__), "static"),
