@@ -110,7 +110,7 @@ def ChangeSource(new):
     global regime_analyzer
     global option_dropdown
 
-    option_dropdown.value = new
+    option_dropdown.label = new
     df = redis_source.data_frame(new)
     regime_analyzer.fit(df.close)
     main_figure_src.fig.title.text = new + " (daily)"
