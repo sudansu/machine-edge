@@ -101,7 +101,7 @@ def SelectCandle():
         elif func == 'MORNINGSTAR':
         	output = CDLMORNINGSTAR(df)
 
-        print(output)
+        #print(output)
 
         c = ['red']*length
         i = 0
