@@ -92,6 +92,16 @@ def SelectCandle():
             output = CDL2CROWS(df)
         elif func == 'HAMMER':
             output = CDLHAMMER(df)
+        elif func == 'ENGULFING':
+        	output = CDLENGULFING(df)
+        elif func == 'EVENINGSTAR':
+        	output = CDLEVENINGSTAR(df)
+        elif func == 'HANGINGMAN':
+        	output = CDLHANGINGMAN(df)
+        elif func == 'MORNINGSTAR':
+        	output = CDLMORNINGSTAR(df)
+
+        print(output)
 
         c = ['red']*length
         i = 0
@@ -218,7 +228,7 @@ _reset.on_click(Reset)
 select_plot = column(_select, widgetbox(_lower, _higher), row(_apply, _reset))
 
 # candle tab
-candles = ["DOJI", "2CROWS", "HAMMER"]
+candles = ["DOJI", "2CROWS", "HAMMER", "ENGULFING", "EVENINGSTAR", "HANGINGMAN", 'MORNINGSTAR']
 _select_candle = Select(title="Candlestick:", value=candles[0], options=candles)
 _apply_candle = Button(label='Apply', width=60)
 _apply_candle.on_click(SelectCandle)
