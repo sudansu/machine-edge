@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 
 from common import utils
-from dist.dtw import DynamicTimeWarping
+# from dist.dtw import DynamicTimeWarping
+from dist.fast_dtw import FastDynamicTimeWarping
 
 class RepresentativeSelection:
     """
@@ -24,7 +25,7 @@ class RepresentativeSelection:
     """
 
     def __init__(self):
-        self._dtw = DynamicTimeWarping()
+        self._dtw = FastDynamicTimeWarping()
 
     def fit(self, srcs):
         """

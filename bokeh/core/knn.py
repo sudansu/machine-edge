@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from common import utils
-from dist.dtw import DynamicTimeWarping
+# from dist.dtw import DynamicTimeWarping
+from dist.fast_dtw import FastDynamicTimeWarping
 
 class KnnGaussianPrediction:
     """
@@ -20,7 +21,7 @@ class KnnGaussianPrediction:
     """
 
     def __init__(self):
-        self._dtw = DynamicTimeWarping()
+        self._dtw = FastDynamicTimeWarping()
         self._gp = GaussianProcessRegressor(n_restarts_optimizer=3)
 
     def fit(self, src):
